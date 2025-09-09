@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 // Base API configuration
-const BASE_URL = 'http://localhost:8000/api'
+const BASE_URL = 'https://backend-production-1895.up.railway.app/api'
 
 // Create axios instance
 const api = axios.create({
