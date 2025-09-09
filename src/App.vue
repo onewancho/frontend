@@ -31,6 +31,8 @@ export default {
     onMounted(() => {
       // Initialize auth state from localStorage
       authStore.init()
+      api.get("/sanctum/csrf-cookie");
+
     })
 
     return {

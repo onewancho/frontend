@@ -7,6 +7,8 @@ const BASE_URL = 'https://backend-production-1895.up.railway.app/api'
 const api = axios.create({
   baseURL: BASE_URL,
   timeout: 10000,
+  withCredentials: true, // Include cookies
+  withXSRFToken: true,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
