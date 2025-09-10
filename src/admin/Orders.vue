@@ -156,48 +156,19 @@
                   <span class="font-semibold text-green-600">Rp {{ formatPrice(order.total_amount || order.total) }}</span>
                 </td>
                 <td>
-                  <span 
-                    v-if="order.status === 'pending'" 
-                    class="badge badge-warning"
+                  <select 
+                    :value="order.status" 
+                    @change="updateOrderStatus(order, $event.target.value)"
+                    class="select select-sm select-bordered"
+                    :class="getStatusSelectClass(order.status)"
                   >
-                    ⏳ Pending
-                  </span>
-                  <span 
-                    v-else-if="order.status === 'confirmed'" 
-                    class="badge badge-info"
-                  >
-                    ✅ Confirmed
-                  </span>
-                  <span 
-                    v-else-if="order.status === 'processing'" 
-                    class="badge badge-primary"
-                  >
-                    ⚡ Processing
-                  </span>
-                  <span 
-                    v-else-if="order.status === 'shipped'" 
-                    class="badge badge-accent"
-                  >
-                    🚚 Shipped
-                  </span>
-                  <span 
-                    v-else-if="order.status === 'delivered'" 
-                    class="badge badge-success"
-                  >
-                    📦 Delivered
-                  </span>
-                  <span 
-                    v-else-if="order.status === 'cancelled'" 
-                    class="badge badge-error"
-                  >
-                    ❌ Cancelled
-                  </span>
-                  <span 
-                    v-else 
-                    class="badge badge-neutral"
-                  >
-                    {{ order.status }}
-                  </span>
+                    <option value="pending">⏳ Pending</option>
+                    <option value="confirmed">✅ Confirmed</option>
+                    <option value="processing">⚡ Processing</option>
+                    <option value="shipped">🚚 Shipped</option>
+                    <option value="delivered">📦 Delivered</option>
+                    <option value="cancelled">❌ Cancelled</option>
+                  </select>
                 </td>
                 <td>
                   <span class="text-gray-600">{{ formatDate(order.created_at) }}</span>
@@ -273,6 +244,18 @@ export default {
       })
     }
 
+    const getStatusSelectClass = (status) => {
+      const statusClasses = {
+        'pending': 'select-warning',
+        'confirmed': 'select-info',
+        'processing': 'select-primary',
+        'shipped': 'select-accent',
+        'delivered': 'select-success',
+        'cancelled': 'select-error'
+      }
+      return statusClasses[status] || 'select-bordered'
+    }
+
     const viewOrderDetails = (order) => {
       // TODO: Implement order details modal or navigate to details page
       alert(`Detail pesanan #${order.id} akan ditampilkan di sini`)
@@ -293,6 +276,21 @@ export default {
         error.value = 'Failed to load orders'
       } finally {
         isLoading.value = false
+      }
+    }
+
+    const updateOrderStatus = async (order, newStatus) => {
+      try {
+        const result = await orderService.updateOrderStatus(order.id, newStatus)
+        
+        if (result.success) {
+          await loadOrders() // Reload orders
+        } else {
+          alert('Gagal mengupdate status pesanan: ' + result.error)
+        }
+      } catch (error) {
+        console.error('Update status error:', error)
+        alert('Gagal mengupdate status pesanan')
       }
     }
 
@@ -328,7 +326,9 @@ export default {
       error,
       formatPrice,
       formatDate,
+      getStatusSelectClass,
       viewOrderDetails,
+      updateOrderStatus,
       deleteOrder,
       loadOrders
     }
