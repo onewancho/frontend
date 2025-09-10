@@ -128,7 +128,7 @@
                   <select 
                     :value="category.status" 
                     @change="updateCategoryStatus(category, $event.target.value)"
-                    class="select select-sm select-bordered"
+                    class="select select-sm select-bordered w-full max-w-xs"
                     :class="category.status === 'active' ? 'select-success' : 'select-warning'"
                   >
                     <option value="active">✅ Aktif</option>
@@ -214,9 +214,9 @@
             <label class="label">
               <span class="label-text">Status</span>
             </label>
-            <select v-model="categoryForm.status" class="select select-bordered">
-              <option value="active">Aktif</option>
-              <option value="inactive">Tidak Aktif</option>
+            <select v-model="categoryForm.status" class="select select-bordered w-full">
+              <option value="active">✅ Aktif</option>
+              <option value="inactive">⏸️ Tidak Aktif</option>
             </select>
           </div>
 
@@ -256,14 +256,20 @@ export default {
     const loadCategories = async () => {
       isPageLoading.value = true
       try {
+        console.log('Loading categories...')
         const result = await categoryService.getCategories()
+        console.log('Categories result:', result)
+        
         if (result.success) {
-          categories.value = result.data.data || []
+          categories.value = result.data.data || result.data || []
+          console.log('Categories loaded:', categories.value)
         } else {
           console.error('Failed to load categories:', result.error)
+          categories.value = []
         }
       } catch (error) {
         console.error('Error loading categories:', error)
+        categories.value = []
       } finally {
         isPageLoading.value = false
       }
