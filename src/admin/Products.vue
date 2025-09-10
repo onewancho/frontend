@@ -128,9 +128,14 @@
                 </td>
                 <td>
                   <div class="flex items-center">
-                    <div class="avatar placeholder mr-3">
-                      <div class="bg-neutral text-neutral-content rounded-lg w-10">
-                        <span class="text-xs">{{ product.name.charAt(0).toUpperCase() }}</span>
+                    <div class="avatar mr-3">
+                      <div class="w-10 h-10 rounded-lg">
+                        <img 
+                          :src="getProductImageUrl(product)" 
+                          :alt="product.name"
+                          class="w-full h-full object-cover rounded-lg"
+                          @error="handleImageError"
+                        />
                       </div>
                     </div>
                     <div>
@@ -363,6 +368,33 @@ export default {
       }).format(amount)
     }
 
+    const getProductImageUrl = (product) => {
+      // Default image for products without image
+      const defaultImage = 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+      
+      if (!product.image) {
+        return defaultImage
+      }
+      
+      // If image is already a full URL, use it as is
+      if (product.image.startsWith('http')) {
+        return product.image
+      }
+      
+      // If image starts with /, use as local path
+      if (product.image.startsWith('/')) {
+        return product.image
+      }
+      
+      // Otherwise, assume it's from storage (API)
+      return `https://backend-production-1895.up.railway.app/storage/${product.image}`
+    }
+
+    const handleImageError = (event) => {
+      // Fallback to default image if image fails to load
+      event.target.src = 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+    }
+
     const loadProducts = async () => {
       isPageLoading.value = true
       try {
@@ -443,6 +475,20 @@ export default {
       }
     }
 
+    const updateProductStatus = async (product, newStatus) => {
+      try {
+        const updateData = { ...product, status: newStatus }
+        const result = await productService.updateProduct(product.id, updateData)
+        if (result.success) {
+          await loadProducts()
+        } else {
+          console.error('Failed to update product status:', result.error)
+        }
+      } catch (error) {
+        console.error('Error updating product status:', error)
+      }
+    }
+
     const closeModal = () => {
       showCreateModal.value = false
       showEditModal.value = false
@@ -470,10 +516,14 @@ export default {
       showEditModal,
       productForm,
       formatCurrency,
+      getProductImageUrl,
+      handleImageError,
       submitProduct,
       editProduct,
       deleteProduct,
-      closeModal
+      updateProductStatus,
+      closeModal,
+      loadProducts
     }
   }
 }
