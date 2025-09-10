@@ -211,7 +211,7 @@ export default {
           return product.image
         }
         // Otherwise, assume it's from storage (API)
-        return `http://localhost:8000/storage/${product.image}`
+        return `https://backend-production-1895.up.railway.app/storage/${product.image}`
       }
       return defaultProductImage
     }

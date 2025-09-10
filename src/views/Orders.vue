@@ -304,7 +304,7 @@ export default {
       cartStore.removeItem(productId)
     }
 
-    // API functions with direct fetch approach
+    // API functions with orderService instead of direct fetch
     const fetchOrders = async () => {
       if (!authStore.isAuthenticated) {
         orders.value = []
@@ -314,31 +314,13 @@ export default {
       isLoadingOrders.value = true
 
       try {
-        // Direct fetch approach for better control
-        const token = localStorage.getItem('auth_token')
+        const result = await orderService.getOrders()
         
-        const response = await fetch('http://localhost:8000/api/orders', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        })
-
-        const data = await response.json()
-
-        if (response.ok && data) {
-          if (data.success && Array.isArray(data.data)) {
-            orders.value = data.data
-          } else if (Array.isArray(data)) {
-            orders.value = data
-          } else {
-            orders.value = []
-          }
+        if (result.success) {
+          orders.value = result.data || []
         } else {
           orders.value = []
-          alert(`Gagal memuat riwayat pesanan: ${data.message || 'Error ' + response.status}`)
+          alert(`Gagal memuat riwayat pesanan: ${result.error}`)
         }
       } catch (error) {
         console.error('💥 Error fetching orders:', error)
@@ -379,21 +361,10 @@ export default {
           total: cartStore.total + shippingCost.value
         }
 
-        // Direct fetch for checkout
-        const token = localStorage.getItem('auth_token')
-        const response = await fetch('http://localhost:8000/api/orders', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(orderData)
-        })
+        // Use orderService for checkout
+        const result = await orderService.createOrder(orderData)
 
-        const data = await response.json()
-
-        if (response.ok && (data.success || data.id)) {
+        if (result.success) {
           // Clear cart and reset form
           cartStore.clearCart()
           shippingAddress.value = ''
@@ -401,9 +372,10 @@ export default {
           // Show success modal
           showSuccessModal.value = true
         } else {
-          alert(`Gagal memproses pesanan: ${data.message || 'Error ' + response.status}`)
+          alert(`Gagal memproses pesanan: ${result.error}`)
         }
       } catch (error) {
+        console.error('Checkout error:', error)
         alert('Terjadi kesalahan saat memproses pesanan')
       } finally {
         isProcessingOrder.value = false
