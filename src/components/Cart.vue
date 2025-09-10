@@ -16,9 +16,10 @@
           <div class="card-body">
             <div class="flex items-center gap-4">
               <img 
-                src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp" 
-                alt="Product" 
+                :src="getProductImage(item)" 
+                :alt="item.name" 
                 class="w-20 h-20 rounded object-cover"
+                @error="handleImageError"
               />
               <div class="flex-1">
                 <h3 class="font-bold">{{ item.name }}</h3>
@@ -115,6 +116,35 @@ export default {
   methods: {
     formatPrice(price) {
       return new Intl.NumberFormat('id-ID').format(price);
+    },
+    getProductImage(product) {
+      // Use image_url if available (this is the complete URL from backend)
+      if (product.image_url) {
+        return product.image_url
+      }
+      
+      // Use image field if available
+      if (product.image) {
+        // If image is already a full URL, use it as is
+        if (product.image.startsWith('http')) {
+          return product.image
+        }
+        
+        // If image starts with /, use as local path
+        if (product.image.startsWith('/')) {
+          return product.image
+        }
+        
+        // Otherwise, assume it's from storage (API)
+        return `https://backend-production-1895.up.railway.app/storage/${product.image}`
+      }
+      
+      // Fallback to local default image
+      return '/images/Beranda-1.png'
+    },
+    handleImageError(event) {
+      // Fallback to local default image if image fails to load
+      event.target.src = '/images/Beranda-1.png'
     },
     increaseQty(item) {
       item.qty++;

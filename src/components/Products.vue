@@ -21,9 +21,10 @@
       <div v-for="product in filteredProducts" :key="product.id" class="card bg-base-100 w-full shadow-sm">
         <figure>
           <img
-            src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.webp"
-            alt="Product"
+            :src="getProductImage(product)"
+            :alt="product.name"
             class="h-48 w-full object-cover"
+            @error="handleImageError"
           />
         </figure>
         <div class="card-body p-4">
@@ -159,6 +160,35 @@ export default {
   methods: {
     formatPrice(price) {
       return new Intl.NumberFormat('id-ID').format(price);
+    },
+    getProductImage(product) {
+      // Use image_url if available (this is the complete URL from backend)
+      if (product.image_url) {
+        return product.image_url
+      }
+      
+      // Use image field if available
+      if (product.image) {
+        // If image is already a full URL, use it as is
+        if (product.image.startsWith('http')) {
+          return product.image
+        }
+        
+        // If image starts with /, use as local path
+        if (product.image.startsWith('/')) {
+          return product.image
+        }
+        
+        // Otherwise, assume it's from storage (API)
+        return `https://backend-production-1895.up.railway.app/storage/${product.image}`
+      }
+      
+      // Fallback to local default image
+      return '/images/Beranda-1.png'
+    },
+    handleImageError(event) {
+      // Fallback to local default image if image fails to load
+      event.target.src = '/images/Beranda-1.png'
     },
     addToCart(product) {
       // TODO: Implement add to cart functionality

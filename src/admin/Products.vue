@@ -369,30 +369,34 @@ export default {
     }
 
     const getProductImageUrl = (product) => {
-      // Default image for products without image
-      const defaultImage = 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
-      
-      if (!product.image) {
-        return defaultImage
+      // Use image_url if available (this is the complete URL from backend)
+      if (product.image_url) {
+        return product.image_url
       }
       
-      // If image is already a full URL, use it as is
-      if (product.image.startsWith('http')) {
-        return product.image
+      // Use image field if available
+      if (product.image) {
+        // If image is already a full URL, use it as is
+        if (product.image.startsWith('http')) {
+          return product.image
+        }
+        
+        // If image starts with /, use as local path
+        if (product.image.startsWith('/')) {
+          return product.image
+        }
+        
+        // Otherwise, assume it's from storage (API)
+        return `https://backend-production-1895.up.railway.app/storage/${product.image}`
       }
       
-      // If image starts with /, use as local path
-      if (product.image.startsWith('/')) {
-        return product.image
-      }
-      
-      // Otherwise, assume it's from storage (API)
-      return `https://backend-production-1895.up.railway.app/storage/${product.image}`
+      // Fallback to local default image instead of Unsplash
+      return '/images/Beranda-1.png'
     }
 
     const handleImageError = (event) => {
-      // Fallback to default image if image fails to load
-      event.target.src = 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+      // Fallback to local default image if image fails to load
+      event.target.src = '/images/Beranda-1.png'
     }
 
     const loadProducts = async () => {
