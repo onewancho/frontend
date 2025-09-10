@@ -96,7 +96,7 @@
             </div>
             <div class="stat-title">Rata-rata Harga</div>
             <div class="stat-value text-purple-500 text-sm">
-              {{ products.length > 0 ? formatCurrency(products.reduce((sum, p) => sum + p.price, 0) / products.length) : 'Rp 0' }}
+              {{ formatCurrency(calculateAveragePrice()) }}
             </div>
             <div class="stat-desc">Harga rata-rata</div>
           </div>
@@ -365,10 +365,26 @@ export default {
     })
 
     const formatCurrency = (amount) => {
+      if (isNaN(amount) || amount === null || amount === undefined) {
+        return 'Rp 0'
+      }
       return new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR'
       }).format(amount)
+    }
+
+    const calculateAveragePrice = () => {
+      if (products.value.length === 0) return 0
+      
+      const validPrices = products.value
+        .map(p => parseFloat(p.price))
+        .filter(price => !isNaN(price) && price > 0)
+      
+      if (validPrices.length === 0) return 0
+      
+      const sum = validPrices.reduce((total, price) => total + price, 0)
+      return sum / validPrices.length
     }
 
     const getProductImageUrl = (product) => {
@@ -523,6 +539,7 @@ export default {
       showEditModal,
       productForm,
       formatCurrency,
+      calculateAveragePrice,
       getProductImageUrl,
       handleImageError,
       submitProduct,
