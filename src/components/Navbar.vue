@@ -125,6 +125,7 @@
 </template>
 
 <script>
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth.js'
 import { useCartStore } from '../stores/cart.js'
@@ -137,8 +138,19 @@ export default {
     const cartStore = useCartStore()
 
     const handleLogout = async () => {
-      await authStore.logout()
-      router.push('/')
+      try {
+        await authStore.logout()
+        // Force navigate to home page and refresh the page to ensure UI is updated
+        await router.push('/')
+        // Small delay to ensure navigation is complete, then refresh
+        setTimeout(() => {
+          window.location.reload()
+        }, 100)
+      } catch (error) {
+        console.error('Logout error:', error)
+        // Force refresh even if there's an error
+        window.location.href = '/'
+      }
     }
 
     const goToCart = () => {
@@ -147,15 +159,15 @@ export default {
     }
 
     return {
-      // Auth
-      isAuthenticated: authStore.isAuthenticated,
-      isAdmin: authStore.isAdmin,
-      user: authStore.user,
-      userInitial: authStore.userInitial,
+      // Auth - using computed for better reactivity
+      isAuthenticated: computed(() => authStore.isAuthenticated),
+      isAdmin: computed(() => authStore.isAdmin),
+      user: computed(() => authStore.user),
+      userInitial: computed(() => authStore.userInitial),
       handleLogout,
       
       // Cart
-      cartItemCount: cartStore.itemCount,
+      cartItemCount: computed(() => cartStore.itemCount),
       goToCart
     }
   }

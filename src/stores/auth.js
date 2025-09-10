@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { nextTick } from 'vue'
 import { authService } from '../services/index.js'
 
 export const useAuthStore = defineStore('auth', {
@@ -121,6 +122,8 @@ export const useAuthStore = defineStore('auth', {
       } finally {
         this.clearAuth()
         this.isLoading = false
+        // Ensure reactivity is triggered
+        await nextTick()
       }
     },
 
@@ -132,6 +135,8 @@ export const useAuthStore = defineStore('auth', {
       } finally {
         this.clearAuth()
         this.isLoading = false
+        // Ensure reactivity is triggered
+        await nextTick()
       }
     },
 
@@ -141,6 +146,11 @@ export const useAuthStore = defineStore('auth', {
       this.isAuthenticated = false
       localStorage.removeItem('auth_token')
       localStorage.removeItem('user_data')
+      // Force trigger reactivity
+      this.$patch({
+        user: null,
+        isAuthenticated: false
+      })
     }
   }
 })
