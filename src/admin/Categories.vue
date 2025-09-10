@@ -120,15 +120,18 @@
                   <span class="text-gray-600">{{ category.description || 'Tidak ada deskripsi' }}</span>
                 </td>
                 <td>
-                  <select 
-                    :value="category.status" 
-                    @change="updateCategoryStatus(category, $event.target.value)"
-                    class="select select-sm select-bordered w-full max-w-xs"
-                    :class="category.status === 'active' ? 'select-success' : 'select-warning'"
+                  <span 
+                    v-if="category.status === 'active'" 
+                    class="badge badge-success"
                   >
-                    <option value="active">✅ Aktif</option>
-                    <option value="inactive">⏸️ Tidak Aktif</option>
-                  </select>
+                    ✅ Aktif
+                  </span>
+                  <span 
+                    v-else 
+                    class="badge badge-warning"
+                  >
+                    ⏸️ Tidak Aktif
+                  </span>
                 </td>
                 <td>
                   <div class="flex space-x-2">
