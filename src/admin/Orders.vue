@@ -146,11 +146,6 @@
                 </td>
                 <td>
                   <div class="flex items-center">
-                    <div class="avatar placeholder mr-3">
-                      <div class="bg-neutral text-neutral-content rounded-full w-8">
-                        <span class="text-xs">{{ getCustomerInitial(order) }}</span>
-                      </div>
-                    </div>
                     <div>
                       <div class="font-semibold text-gray-900">{{ order.customer_name || order.user?.name || 'Unknown' }}</div>
                       <div class="text-sm text-gray-600">{{ order.customer_email || order.user?.email || '' }}</div>
@@ -249,11 +244,6 @@ export default {
       })
     }
 
-    const getCustomerInitial = (order) => {
-      const name = order.customer_name || order.user?.name || 'U'
-      return name.charAt(0).toUpperCase()
-    }
-
     const getStatusSelectClass = (status) => {
       const statusClasses = {
         'pending': 'select-warning',
@@ -336,7 +326,6 @@ export default {
       error,
       formatPrice,
       formatDate,
-      getCustomerInitial,
       getStatusSelectClass,
       viewOrderDetails,
       updateOrderStatus,

@@ -108,11 +108,6 @@
               </td>
               <td>
                 <div class="flex items-center">
-                  <div class="avatar placeholder mr-3">
-                    <div :class="user.role === 'admin' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'" class="rounded-lg w-10">
-                      <span class="text-xs font-bold">{{ user.name.charAt(0).toUpperCase() }}</span>
-                    </div>
-                  </div>
                   <div>
                     <div class="font-semibold text-gray-900 flex items-center gap-2">
                       {{ user.name }}

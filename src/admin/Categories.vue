@@ -110,11 +110,6 @@
                 </td>
                 <td>
                   <div class="flex items-center">
-                    <div class="avatar placeholder mr-3">
-                      <div class="bg-neutral text-neutral-content rounded-full w-8">
-                        <span class="text-xs">{{ category.name.charAt(0).toUpperCase() }}</span>
-                      </div>
-                    </div>
                     <div>
                       <div class="font-semibold text-gray-900">{{ category.name }}</div>
                       <div class="text-sm text-gray-600">Kategori produk</div>
