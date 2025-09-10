@@ -166,15 +166,18 @@
                   </div>
                 </td>
                 <td>
-                  <select 
-                    :value="product.status" 
-                    @change="updateProductStatus(product, $event.target.value)"
-                    class="select select-sm select-bordered"
-                    :class="product.status === 'active' ? 'select-success' : 'select-warning'"
+                  <span 
+                    v-if="product.status === 'active'" 
+                    class="badge badge-success"
                   >
-                    <option value="active">✅ Aktif</option>
-                    <option value="inactive">⏸️ Nonaktif</option>
-                  </select>
+                    ✅ Aktif
+                  </span>
+                  <span 
+                    v-else 
+                    class="badge badge-warning"
+                  >
+                    ⏸️ Nonaktif
+                  </span>
                 </td>
                 <td>
                   <div class="flex space-x-2">
