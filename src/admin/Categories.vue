@@ -186,30 +186,23 @@
 
     <!-- Create/Edit Modal -->
     <div class="modal" :class="{ 'modal-open': showCreateModal || showEditModal }">
-      <div class="modal-box max-w-xl">
-        <div class="flex items-center justify-between pb-4 border-b">
-          <h3 class="font-bold text-xl text-gray-900">
-            {{ showEditModal ? '✏️ Edit Kategori' : '➕ Tambah Kategori Baru' }}
-          </h3>
-          <button @click="closeModal" class="btn btn-sm btn-circle btn-ghost">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
+      <div class="modal-box max-w-lg">
+        <h3 class="font-bold text-xl text-gray-900 mb-6">
+          Form Edit Kategori
+        </h3>
         
-        <form @submit.prevent="submitCategory" class="py-6 space-y-6">
+        <form @submit.prevent="submitCategory" class="space-y-6">
           <!-- Category Name -->
           <div class="form-control">
             <label class="label">
-              <span class="label-text font-semibold text-gray-700">📝 Nama Kategori</span>
-              <span class="label-text-alt text-red-500 font-bold">*</span>
+              <span class="label-text font-medium text-gray-700">Nama Kategori</span>
+              <span class="label-text-alt text-red-500">*</span>
             </label>
             <input 
               v-model="categoryForm.name" 
               type="text" 
-              class="input input-bordered input-lg focus:border-primary focus:outline-none"
-              placeholder="Masukkan nama kategori..."
+              class="input input-bordered w-full focus:border-primary focus:outline-none"
+              placeholder="Hijab Premium"
               required
             >
           </div>
@@ -217,24 +210,29 @@
           <!-- Description -->
           <div class="form-control">
             <label class="label">
-              <span class="label-text font-semibold text-gray-700">📄 Deskripsi</span>
-              <span class="label-text-alt text-gray-400">Opsional</span>
+              <span class="label-text font-medium text-gray-700">Deskripsi</span>
             </label>
             <textarea 
               v-model="categoryForm.description" 
-              class="textarea textarea-bordered textarea-lg focus:border-primary focus:outline-none h-28"
-              placeholder="Jelaskan kategori ini untuk memudahkan pengelolaan..."
+              class="textarea textarea-bordered w-full h-32 focus:border-primary focus:outline-none resize-none"
+              placeholder="Koleksi hijab premium dengan bahan berkualitas tinggi"
             ></textarea>
           </div>
 
           <!-- Action Buttons -->
-          <div class="flex justify-end space-x-3 pt-4 border-t">
-            <button type="button" @click="closeModal" class="btn btn-lg">
-              ❌ Batal
+          <div class="flex justify-start space-x-3 pt-4">
+            <button type="button" @click="closeModal" class="btn btn-ghost">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+              Batal
             </button>
-            <button type="submit" class="btn btn-primary btn-lg" :disabled="isLoading">
+            <button type="submit" class="btn btn-warning" :disabled="isLoading">
               <span v-if="isLoading" class="loading loading-spinner loading-sm mr-2"></span>
-              <span v-else>{{ showEditModal ? '💾 Simpan Perubahan' : '✅ Tambah Kategori' }}</span>
+              <svg v-else class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              Update Kategori
             </button>
           </div>
         </form>
