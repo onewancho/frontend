@@ -1,5 +1,39 @@
 <template>
   <div class="min-h-screen bg-gray-50">
+    <!-- Notification Toast -->
+    <div v-if="notification.show" class="fixed top-4 right-4 z-50 max-w-md animate-pulse">
+      <div class="alert shadow-xl border-0" :class="{
+        'alert-success bg-green-500 text-white': notification.type === 'success',
+        'alert-error bg-red-500 text-white': notification.type === 'error',
+        'alert-warning bg-yellow-500 text-white': notification.type === 'warning',
+        'alert-info bg-blue-500 text-white': notification.type === 'info'
+      }">
+        <div class="flex-1">
+          <svg v-if="notification.type === 'success'" class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <svg v-else-if="notification.type === 'error'" class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <svg v-else-if="notification.type === 'warning'" class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.664-.833-2.464 0L4.35 18.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
+          <svg v-else class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div>
+            <h3 class="font-bold">{{ notification.title }}</h3>
+            <div class="text-xs">{{ notification.message }}</div>
+          </div>
+        </div>
+        <button @click="hideNotification" class="btn btn-sm btn-ghost">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
     <!-- Header -->
     <div class="bg-white shadow-sm border-b border-gray-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -8,7 +42,29 @@
             <h1 class="text-3xl font-bold text-gray-900">Manajemen Kategori</h1>
             <p class="mt-1 text-sm text-gray-600">Kelola kategori produk untuk mengorganisir toko Anda</p>
           </div>
-          <div class="flex items-center space-x-4">
+          <div class="flex items-center space      })
+    }
+
+    // Notification functions
+    const showNotification = (type, title, message) => {
+      notification.value = {
+        show: true,
+        type,
+        title,
+        message
+      }
+      
+      // Auto hide after 5 seconds
+      setTimeout(() => {
+        hideNotification()
+      }, 5000)
+    }
+
+    const hideNotification = () => {
+      notification.value.show = false
+    }
+
+    const updateCategoryStatus = async (category, newStatus) => {">
             <div class="text-sm text-gray-500">
               Total kategori: {{ categories.length }}
             </div>
@@ -493,6 +549,14 @@ export default {
     const viewingCategory = ref(null)
     const categoryProducts = ref([])
     const loadingProducts = ref(false)
+    
+    // Notification state
+    const notification = ref({
+      show: false,
+      type: 'success', // 'success', 'error', 'warning', 'info'
+      title: '',
+      message: ''
+    })
 
     const categoryForm = ref({
       name: '',
@@ -541,7 +605,9 @@ export default {
       isLoading.value = true
       try {
         let result
-        if (showEditModal.value && editingCategory.value) {
+        const isEditing = showEditModal.value && editingCategory.value
+        
+        if (isEditing) {
           result = await categoryService.updateCategory(editingCategory.value.id, categoryForm.value)
         } else {
           result = await categoryService.createCategory(categoryForm.value)
@@ -550,11 +616,37 @@ export default {
         if (result.success) {
           await loadCategories()
           closeModal()
+          
+          // Show success notification
+          if (isEditing) {
+            showNotification(
+              'success',
+              'Berhasil Memperbarui Kategori',
+              `Kategori "${categoryForm.value.name}" berhasil diperbarui.`
+            )
+          } else {
+            showNotification(
+              'success',
+              'Berhasil Menambah Kategori',
+              `Kategori "${categoryForm.value.name}" berhasil ditambahkan ke sistem.`
+            )
+          }
         } else {
           console.error('Failed to save category:', result.error)
+          showNotification(
+            'error',
+            isEditing ? 'Gagal Memperbarui Kategori' : 'Gagal Menambah Kategori',
+            `Terjadi kesalahan: ${result.error || result.message || 'Silakan coba lagi.'}`
+          )
         }
       } catch (error) {
         console.error('Error saving category:', error)
+        const isEditing = showEditModal.value && editingCategory.value
+        showNotification(
+          'error',
+          isEditing ? 'Gagal Memperbarui Kategori' : 'Gagal Menambah Kategori',
+          'Terjadi kesalahan saat menyimpan kategori. Silakan coba lagi.'
+        )
       } finally {
         isLoading.value = false
       }
@@ -571,16 +663,50 @@ export default {
     }
 
     const deleteCategory = async (id) => {
-      if (confirm('Apakah Anda yakin ingin menghapus kategori ini?')) {
+      const categoryToDelete = categories.value.find(cat => cat.id === id)
+      const categoryName = categoryToDelete?.name || 'kategori'
+      
+      if (confirm(`Apakah Anda yakin ingin menghapus kategori "${categoryName}"?`)) {
         try {
           const result = await categoryService.deleteCategory(id)
+          
           if (result.success) {
             await loadCategories()
+            showNotification(
+              'success',
+              'Berhasil Menghapus Kategori',
+              `Kategori "${categoryName}" berhasil dihapus dari sistem.`
+            )
           } else {
+            // Check if error is related to existing products
+            const errorMessage = result.error || result.message || 'Gagal menghapus kategori'
+            const isProductConstraint = errorMessage.toLowerCase().includes('produk') || 
+                                      errorMessage.toLowerCase().includes('product') ||
+                                      errorMessage.toLowerCase().includes('constraint') ||
+                                      errorMessage.toLowerCase().includes('foreign key')
+            
+            if (isProductConstraint) {
+              showNotification(
+                'error',
+                'Tidak Dapat Menghapus Kategori',
+                `Kategori "${categoryName}" tidak dapat dihapus karena masih memiliki produk. Hapus semua produk dalam kategori ini terlebih dahulu.`
+              )
+            } else {
+              showNotification(
+                'error',
+                'Gagal Menghapus Kategori',
+                `Terjadi kesalahan saat menghapus kategori "${categoryName}": ${errorMessage}`
+              )
+            }
             console.error('Failed to delete category:', result.error)
           }
         } catch (error) {
           console.error('Error deleting category:', error)
+          showNotification(
+            'error',
+            'Terjadi Kesalahan',
+            `Terjadi kesalahan saat menghapus kategori "${categoryName}". Silakan coba lagi.`
+          )
         }
       }
     }
@@ -746,6 +872,7 @@ export default {
       viewingCategory,
       categoryProducts,
       loadingProducts,
+      notification,
       categoryForm,
       submitCategory,
       updateCategoryStatus,
@@ -764,7 +891,9 @@ export default {
       getAvailableProducts,
       getOutOfStockProducts,
       viewProduct,
-      editProduct
+      editProduct,
+      showNotification,
+      hideNotification
     }
   }
 }
