@@ -478,7 +478,7 @@
 
 <script>
 import { ref, onMounted } from 'vue'
-import { categoryService } from '../services/index.js'
+import { categoryService, productService } from '../services/index.js'
 
 export default {
   name: 'Categories',
@@ -599,22 +599,23 @@ export default {
       
       try {
         console.log('Loading products for category:', categoryId)
-        // Assuming there's a productService.getProductsByCategory method
-        // If not available, we'll use a generic API call
-        const response = await fetch(`https://backend-ravayahijab.up.railway.app/api/products?category_id=${categoryId}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        })
         
-        const result = await response.json()
+        // Use the admin product service to get products by category
+        const result = await productService.getAdminProductsByCategory(categoryId)
         console.log('Category products result:', result)
         
         if (result.success && result.data) {
-          categoryProducts.value = result.data.data || result.data || []
+          // Handle different response structures
+          if (result.data.data) {
+            categoryProducts.value = result.data.data
+          } else if (Array.isArray(result.data)) {
+            categoryProducts.value = result.data
+          } else {
+            categoryProducts.value = []
+          }
+          console.log('Loaded category products:', categoryProducts.value)
         } else {
+          console.error('Failed to load category products:', result.error)
           categoryProducts.value = []
         }
       } catch (error) {
@@ -670,17 +671,25 @@ export default {
     }
 
     const getTotalProducts = () => {
-      return (categoryProducts.value && categoryProducts.value.length) || viewingCategory.value?.products_count || 0
+      // Priority: actual loaded products, then category products_count, then 0
+      if (categoryProducts.value && categoryProducts.value.length > 0) {
+        return categoryProducts.value.length
+      }
+      return viewingCategory.value?.products_count || 0
     }
 
     const getAvailableProducts = () => {
-      if (!categoryProducts.value || categoryProducts.value.length === 0) return 0
-      return categoryProducts.value.filter(product => product.stock > 0).length
+      if (!categoryProducts.value || categoryProducts.value.length === 0) {
+        return 0
+      }
+      return categoryProducts.value.filter(product => (product.stock || 0) > 0).length
     }
 
     const getOutOfStockProducts = () => {
-      if (!categoryProducts.value || categoryProducts.value.length === 0) return 0
-      return categoryProducts.value.filter(product => product.stock <= 0).length
+      if (!categoryProducts.value || categoryProducts.value.length === 0) {
+        return 0
+      }
+      return categoryProducts.value.filter(product => (product.stock || 0) <= 0).length
     }
 
     const closeModal = () => {

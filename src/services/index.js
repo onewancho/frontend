@@ -216,6 +216,26 @@ export const productService = {
     } catch (error) {
       return { success: false, error: error.response?.data?.message || 'Failed to delete product' }
     }
+  },
+
+  // Get products by category (public)
+  async getProductsByCategory(categoryId) {
+    try {
+      const response = await api.get(`/catalog/products?category_id=${categoryId}`)
+      return { success: true, data: response.data }
+    } catch (error) {
+      return { success: false, error: error.response?.data?.message || 'Failed to fetch products by category' }
+    }
+  },
+
+  // Admin: Get products by category
+  async getAdminProductsByCategory(categoryId) {
+    try {
+      const response = await api.get(`/admin/products?category_id=${categoryId}`)
+      return { success: true, data: response.data }
+    } catch (error) {
+      return { success: false, error: error.response?.data?.message || 'Failed to fetch products by category' }
+    }
   }
 }
 
