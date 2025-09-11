@@ -180,14 +180,36 @@
             </div>
 
             <!-- Order Items -->
-            <div class="space-y-2 mb-4">
+            <div class="space-y-3 mb-4">
               <div 
                 v-for="item in order.order_items || order.items || []" 
                 :key="item.id"
-                class="flex justify-between items-center text-sm"
+                class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
               >
-                <span>{{ item.product?.name || item.product_name || 'Produk' }} x{{ item.quantity }}</span>
-                <span class="font-semibold">Rp {{ formatPrice(item.price * item.quantity) }}</span>
+                <!-- Product Image -->
+                <img 
+                  :src="getProductImageUrl(item.product || item)" 
+                  :alt="item.product?.name || item.product_name || 'Produk'"
+                  class="w-12 h-12 object-cover rounded-lg border"
+                  @error="handleImageError"
+                >
+                
+                <!-- Product Info -->
+                <div class="flex-1">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h4 class="font-medium text-gray-900 text-sm">
+                        {{ item.product?.name || item.product_name || 'Produk' }}
+                      </h4>
+                      <p class="text-xs text-gray-600">
+                        Qty: {{ item.quantity }} × Rp {{ formatPrice(item.price) }}
+                      </p>
+                    </div>
+                    <span class="font-semibold text-pink-500 text-sm">
+                      Rp {{ formatPrice(item.price * item.quantity) }}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -279,6 +301,11 @@ export default {
       
       // Fallback to local default image
       return defaultProductImage
+    }
+
+    const handleImageError = (event) => {
+      // Fallback to local default image if image fails to load
+      event.target.src = defaultProductImage
     }
 
     // Utility functions
@@ -478,6 +505,7 @@ export default {
       getStatusText,
       getStatusBadgeClass,
       getProductImageUrl,
+      handleImageError,
       updateQuantity,
       removeFromCart,
       fetchOrders,
