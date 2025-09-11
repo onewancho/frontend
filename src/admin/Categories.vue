@@ -241,119 +241,234 @@
       </div>
     </div>
 
-    <!-- View Category Modal -->
+    <!-- View Category Modal (Full Screen Design) -->
     <div class="modal" :class="{ 'modal-open': showViewModal }">
-      <div class="modal-box max-w-4xl">
-        <div class="flex items-center justify-between pb-4 border-b">
-          <h3 class="font-bold text-2xl text-gray-900">🏷️ Detail Kategori</h3>
-          <button @click="closeViewModal" class="btn btn-sm btn-circle btn-ghost">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-          </button>
-        </div>
-
-        <div v-if="viewingCategory" class="py-6 space-y-8">
-          <!-- Category Info Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Basic Info -->
-            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl">
-              <div class="space-y-4">
-                <div>
-                  <label class="block text-sm font-medium text-blue-700 mb-1">🆔 ID Kategori</label>
-                  <div class="text-xl font-bold text-blue-900">#{{ viewingCategory.id }}</div>
-                </div>
-                
-                <div>
-                  <label class="block text-sm font-medium text-blue-700 mb-1">📝 Nama Kategori</label>
-                  <div class="text-xl font-bold text-blue-900">{{ viewingCategory.name }}</div>
-                </div>
+      <div class="modal-box w-full max-w-7xl h-full max-h-screen p-0 m-0 rounded-none">
+        <div v-if="viewingCategory" class="h-full flex flex-col">
+          <!-- Header -->
+          <div class="bg-white border-b border-gray-200 px-6 py-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h1 class="text-2xl font-bold text-gray-900">Detail Kategori</h1>
+                <p class="text-gray-600 mt-1">Informasi lengkap kategori {{ viewingCategory.name }}</p>
+              </div>
+              <div class="flex items-center space-x-3">
+                <button @click="editFromView(viewingCategory)" class="btn btn-warning">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                  </svg>
+                  Edit Kategori
+                </button>
+                <button @click="closeViewModal" class="btn btn-ghost">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                  </svg>
+                  Kembali
+                </button>
               </div>
             </div>
+          </div>
 
-            <!-- Statistics -->
-            <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl">
-              <div class="space-y-4">
-                <div>
-                  <label class="block text-sm font-medium text-green-700 mb-1">📦 Jumlah Produk</label>
-                  <div class="text-3xl font-bold text-green-800">
-                    {{ (categoryProducts && categoryProducts.length) || viewingCategory.products_count || 0 }}
+          <!-- Content -->
+          <div class="flex-1 overflow-auto bg-gray-50 p-6">
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <!-- Total Produk -->
+              <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center">
+                  <div class="bg-blue-100 p-3 rounded-lg mr-4">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-500">Total Produk</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ getTotalProducts() }}</p>
                   </div>
                 </div>
+              </div>
 
-                <div>
-                  <label class="block text-sm font-medium text-green-700 mb-1">📅 Tanggal Dibuat</label>
-                  <div class="text-sm text-green-700">{{ formatDate(viewingCategory.created_at) }}</div>
+              <!-- Produk Tersedia -->
+              <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center">
+                  <div class="bg-green-100 p-3 rounded-lg mr-4">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-500">Produk Tersedia</p>
+                    <p class="text-3xl font-bold text-green-600">{{ getAvailableProducts() }}</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Description -->
-            <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl">
-              <label class="block text-sm font-medium text-purple-700 mb-2">📄 Deskripsi</label>
-              <p class="text-purple-800">
-                {{ viewingCategory.description || 'Tidak ada deskripsi untuk kategori ini.' }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Products Section -->
-          <div v-if="loadingProducts" class="text-center py-8">
-            <div class="loading loading-spinner loading-lg text-primary"></div>
-            <p class="mt-2 text-gray-600">Memuat produk kategori...</p>
-          </div>
-
-          <div v-else-if="categoryProducts && categoryProducts.length > 0">
-            <div class="flex items-center justify-between mb-4">
-              <h4 class="text-xl font-bold text-gray-900">🛍️ Produk dalam Kategori</h4>
-              <span class="badge badge-primary badge-lg">{{ categoryProducts.length }} produk</span>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div 
-                v-for="product in categoryProducts" 
-                :key="product.id"
-                class="card bg-white shadow-md border border-gray-200 hover:shadow-lg transition-shadow"
-              >
-                <figure class="px-4 pt-4">
-                  <img 
-                    :src="getProductImageUrl(product)" 
-                    :alt="product.name"
-                    class="rounded-xl w-full h-32 object-cover"
-                    @error="handleImageError"
-                  >
-                </figure>
-                <div class="card-body p-4">
-                  <h5 class="card-title text-sm font-semibold text-gray-900 line-clamp-2">
-                    {{ product.name }}
-                  </h5>
-                  <div class="flex justify-between items-center mt-2">
-                    <span class="text-lg font-bold text-primary">
-                      Rp {{ formatPrice(product.price) }}
-                    </span>
-                    <span class="text-xs text-gray-500">
-                      Stok: {{ product.stock || 0 }}
-                    </span>
+              <!-- Stok Habis -->
+              <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex items-center">
+                  <div class="bg-orange-100 p-3 rounded-lg mr-4">
+                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.664-.833-2.464 0L4.35 18.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-500">Stok Habis</p>
+                    <p class="text-3xl font-bold text-orange-600">{{ getOutOfStockProducts() }}</p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div v-else class="text-center py-12 bg-gray-50 rounded-xl">
-            <div class="text-6xl mb-4">📦</div>
-            <h4 class="text-xl font-semibold text-gray-700 mb-2">Belum Ada Produk</h4>
-            <p class="text-gray-500">Kategori ini belum memiliki produk apapun.</p>
-          </div>
+            <!-- Main Content Grid -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <!-- Left Column - Category Info -->
+              <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                  <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                    Informasi Kategori
+                  </h3>
+                  
+                  <div class="space-y-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kategori</label>
+                      <p class="text-xl font-bold text-gray-900">{{ viewingCategory.name }}</p>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
+                      <p class="text-gray-600 leading-relaxed">
+                        {{ viewingCategory.description || 'Koleksi hijab premium dengan bahan berkualitas tinggi' }}
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Produk</label>
+                      <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        {{ getTotalProducts() }} produk
+                      </span>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Dibuat Pada</label>
+                      <p class="text-gray-600">{{ formatDate(viewingCategory.created_at) }}</p>
+                    </div>
+                    
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Terakhir Diupdate</label>
+                      <p class="text-gray-600">{{ formatDate(viewingCategory.updated_at) }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-          <!-- Action Buttons -->
-          <div class="flex justify-end space-x-3 pt-6 border-t">
-            <button @click="closeViewModal" class="btn btn-lg">
-              ❌ Tutup
-            </button>
-            <button @click="editFromView(viewingCategory)" class="btn btn-primary btn-lg">
-              ✏️ Edit Kategori
-            </button>
+              <!-- Right Column - Products Table -->
+              <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                  <div class="p-6 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                      <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                        Produk dalam Kategori ini
+                      </h3>
+                      <button class="btn btn-primary btn-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Tambah Produk
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="overflow-x-auto">
+                    <div v-if="loadingProducts" class="p-8 text-center">
+                      <div class="loading loading-spinner loading-lg text-primary"></div>
+                      <p class="mt-2 text-gray-600">Memuat produk kategori...</p>
+                    </div>
+
+                    <table v-else-if="categoryProducts && categoryProducts.length > 0" class="table w-full">
+                      <thead class="bg-gray-50">
+                        <tr>
+                          <th class="text-left font-medium text-gray-700">GAMBAR</th>
+                          <th class="text-left font-medium text-gray-700">NAMA PRODUK</th>
+                          <th class="text-left font-medium text-gray-700">HARGA</th>
+                          <th class="text-left font-medium text-gray-700">STOK</th>
+                          <th class="text-left font-medium text-gray-700">STATUS</th>
+                          <th class="text-left font-medium text-gray-700">AKSI</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="product in categoryProducts" :key="product.id" class="border-b border-gray-100 hover:bg-gray-50">
+                          <td class="py-4">
+                            <img 
+                              :src="getProductImageUrl(product)" 
+                              :alt="product.name"
+                              class="w-12 h-12 rounded-lg object-cover"
+                              @error="handleImageError"
+                            >
+                          </td>
+                          <td class="py-4">
+                            <div>
+                              <p class="font-medium text-gray-900">{{ product.name }}</p>
+                              <p class="text-sm text-gray-500">{{ product.description?.substring(0, 50) }}...</p>
+                            </div>
+                          </td>
+                          <td class="py-4">
+                            <span class="font-bold text-gray-900">Rp {{ formatPrice(product.price) }}</span>
+                          </td>
+                          <td class="py-4">
+                            <span class="font-medium text-gray-700">{{ product.stock || 0 }}</span>
+                          </td>
+                          <td class="py-4">
+                            <span v-if="product.stock > 0" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Tersedia
+                            </span>
+                            <span v-else class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              Habis
+                            </span>
+                          </td>
+                          <td class="py-4">
+                            <div class="flex items-center space-x-2">
+                              <button class="btn btn-sm btn-ghost text-green-600 hover:bg-green-50">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                Lihat
+                              </button>
+                              <button class="btn btn-sm btn-ghost text-orange-600 hover:bg-orange-50">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                                Edit
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                    <div v-else class="p-12 text-center">
+                      <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                      </svg>
+                      <h4 class="text-lg font-medium text-gray-700 mb-2">Belum Ada Produk</h4>
+                      <p class="text-gray-500 mb-4">Kategori ini belum memiliki produk apapun.</p>
+                      <button class="btn btn-primary">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Tambah Produk Pertama
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -554,6 +669,20 @@ export default {
       return new Intl.NumberFormat('id-ID').format(price)
     }
 
+    const getTotalProducts = () => {
+      return (categoryProducts.value && categoryProducts.value.length) || viewingCategory.value?.products_count || 0
+    }
+
+    const getAvailableProducts = () => {
+      if (!categoryProducts.value || categoryProducts.value.length === 0) return 0
+      return categoryProducts.value.filter(product => product.stock > 0).length
+    }
+
+    const getOutOfStockProducts = () => {
+      if (!categoryProducts.value || categoryProducts.value.length === 0) return 0
+      return categoryProducts.value.filter(product => product.stock <= 0).length
+    }
+
     const closeModal = () => {
       showCreateModal.value = false
       showEditModal.value = false
@@ -592,7 +721,10 @@ export default {
       loadCategories,
       getProductImageUrl,
       handleImageError,
-      formatPrice
+      formatPrice,
+      getTotalProducts,
+      getAvailableProducts,
+      getOutOfStockProducts
     }
   }
 }
