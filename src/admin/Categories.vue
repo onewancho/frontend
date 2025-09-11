@@ -42,29 +42,7 @@
             <h1 class="text-3xl font-bold text-gray-900">Manajemen Kategori</h1>
             <p class="mt-1 text-sm text-gray-600">Kelola kategori produk untuk mengorganisir toko Anda</p>
           </div>
-          <div class="flex items-center space      })
-    }
-
-    // Notification functions
-    const showNotification = (type, title, message) => {
-      notification.value = {
-        show: true,
-        type,
-        title,
-        message
-      }
-      
-      // Auto hide after 5 seconds
-      setTimeout(() => {
-        hideNotification()
-      }, 5000)
-    }
-
-    const hideNotification = () => {
-      notification.value.show = false
-    }
-
-    const updateCategoryStatus = async (category, newStatus) => {">
+          <div class="flex items-center space-x-4">
             <div class="text-sm text-gray-500">
               Total kategori: {{ categories.length }}
             </div>
