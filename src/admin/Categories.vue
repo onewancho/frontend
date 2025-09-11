@@ -476,11 +476,13 @@
 
 <script>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { categoryService, productService } from '../services/index.js'
 
 export default {
   name: 'Categories',
   setup() {
+    const router = useRouter()
     const categories = ref([])
     const isPageLoading = ref(false)
     const isLoading = ref(false)
@@ -706,14 +708,17 @@ export default {
     const viewProduct = (product) => {
       console.log('Navigating to products page for product:', product)
       // Navigate to admin products page
-      window.location.href = '/admin/products'
+      router.push('/admin/products')
     }
 
     const editProduct = (product) => {
-      console.log('Editing product:', product)
-      // Navigate to product edit page or open edit modal
-      // For now, we'll show an alert - you can implement proper navigation
-      alert(`Edit produk: ${product.name}\nID: ${product.id}`)
+      console.log('Navigating to edit product:', product)
+      // Navigate to admin products page with edit mode
+      // We'll pass the product ID as a query parameter
+      router.push({
+        path: '/admin/products',
+        query: { edit: product.id }
+      })
     }
 
     const closeModal = () => {

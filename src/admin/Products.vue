@@ -374,11 +374,13 @@
 
 <script>
 import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { productService, categoryService } from '../services/index.js'
 
 export default {
   name: 'Products',
   setup() {
+    const route = useRoute()
     const products = ref([])
     const categories = ref([])
     const isPageLoading = ref(false)
@@ -620,6 +622,17 @@ export default {
 
     onMounted(async () => {
       await Promise.all([loadProducts(), loadCategories()])
+      
+      // Check if there's an edit query parameter
+      const editProductId = route.query.edit
+      if (editProductId) {
+        // Find the product and auto-open edit modal
+        const productToEdit = products.value.find(p => p.id == editProductId)
+        if (productToEdit) {
+          console.log('Auto-editing product from category:', productToEdit)
+          editProduct(productToEdit)
+        }
+      }
     })
 
     return {
