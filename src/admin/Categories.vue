@@ -96,23 +96,24 @@
           <table class="table table-zebra">
             <thead>
               <tr>
-                <th>ID</th>
+                <th>No</th>
                 <th>Nama Kategori</th>
                 <th>Deskripsi</th>
-                <th>Status</th>
+                <th>Jumlah Produk</th>
+                <th>Tanggal Dibuat</th>
                 <th>Aksi</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="category in categories" :key="category.id">
+              <tr v-for="(category, index) in categories" :key="category.id">
                 <td>
-                  <span class="font-mono text-sm font-semibold">#{{ category.id }}</span>
+                  <span class="font-mono text-sm font-semibold">{{ index + 1 }}</span>
                 </td>
                 <td>
                   <div class="flex items-center">
                     <div>
                       <div class="font-semibold text-gray-900">{{ category.name }}</div>
-                      <div class="text-sm text-gray-600">Kategori produk</div>
+                      <div class="text-sm text-gray-600">ID: #{{ category.id }}</div>
                     </div>
                   </div>
                 </td>
@@ -120,21 +121,32 @@
                   <span class="text-gray-600">{{ category.description || 'Tidak ada deskripsi' }}</span>
                 </td>
                 <td>
-                  <select 
-                    :value="category.status" 
-                    @change="updateCategoryStatus(category, $event.target.value)"
-                    class="select select-sm select-bordered w-full max-w-xs"
-                    :class="category.status === 'active' ? 'select-success' : 'select-warning'"
-                  >
-                    <option value="active">✅ Aktif</option>
-                    <option value="inactive">⏸️ Tidak Aktif</option>
-                  </select>
+                  <div class="flex items-center">
+                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                      {{ category.products_count || 0 }} produk
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <span class="text-sm text-gray-600">{{ formatDate(category.created_at) }}</span>
                 </td>
                 <td>
                   <div class="flex space-x-2">
                     <button 
+                      @click="viewCategory(category)"
+                      class="btn btn-sm btn-outline btn-primary"
+                      title="Lihat Detail"
+                    >
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                      </svg>
+                      Lihat
+                    </button>
+                    <button 
                       @click="editCategory(category)"
                       class="btn btn-sm btn-outline btn-info"
+                      title="Edit Kategori"
                     >
                       <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -144,6 +156,7 @@
                     <button 
                       @click="deleteCategory(category.id)"
                       class="btn btn-sm btn-error btn-outline"
+                      title="Hapus Kategori"
                     >
                       <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -333,6 +346,31 @@ export default {
       }
     }
 
+    const viewCategory = (category) => {
+      // Create detailed view modal content
+      const details = `
+        ID: ${category.id}
+        Nama: ${category.name}
+        Deskripsi: ${category.description || 'Tidak ada deskripsi'}
+        Status: ${category.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
+        Jumlah Produk: ${category.products_count || 0}
+        Dibuat: ${formatDate(category.created_at)}
+        ${category.updated_at ? `Diupdate: ${formatDate(category.updated_at)}` : ''}
+      `
+      alert(`Detail Kategori:\n\n${details}`)
+    }
+
+    const formatDate = (dateString) => {
+      if (!dateString) return '-'
+      return new Date(dateString).toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
+
     const closeModal = () => {
       showCreateModal.value = false
       showEditModal.value = false
@@ -359,6 +397,8 @@ export default {
       updateCategoryStatus,
       editCategory,
       deleteCategory,
+      viewCategory,
+      formatDate,
       closeModal,
       loadCategories
     }
