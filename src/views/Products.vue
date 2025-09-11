@@ -211,7 +211,7 @@ export default {
           return product.image
         }
         // Otherwise, assume it's from storage (API)
-        return `https://backend-ravayahijab.up.railway.app/storage/${product.image}`
+        return `https://backend-ravayahijab.up.railway.app/files/products/${product.image}`
       }
       return defaultProductImage
     }

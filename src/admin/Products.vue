@@ -441,7 +441,7 @@ export default {
         }
         
         // Otherwise, assume it's from storage (API)
-        return `https://backend-ravayahijab.up.railway.app/storage/${product.image}`
+        return `https://backend-ravayahijab.up.railway.app/files/products/${product.image}`
       }
       
       // Fallback to local default image instead of Unsplash

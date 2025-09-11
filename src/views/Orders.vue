@@ -51,7 +51,7 @@
               class="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg"
             >
               <img 
-                :src="item.image || defaultProductImage" 
+                :src="getProductImageUrl(item)" 
                 :alt="item.name"
                 class="w-16 h-16 object-cover rounded-lg"
               >
@@ -252,7 +252,34 @@ export default {
     const orders = ref([])
     const showSuccessModal = ref(false)
 
-    const defaultProductImage = 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'
+    const defaultProductImage = '/images/Beranda-1.png'
+
+    // Function to get proper product image URL
+    const getProductImageUrl = (product) => {
+      // Use image_url if available (this is the complete URL from backend)
+      if (product.image_url) {
+        return product.image_url
+      }
+      
+      // Use image field if available
+      if (product.image) {
+        // If image is already a full URL, use it as is
+        if (product.image.startsWith('http')) {
+          return product.image
+        }
+        
+        // If image starts with /, use as local path
+        if (product.image.startsWith('/')) {
+          return product.image
+        }
+        
+        // Otherwise, assume it's from storage (API)
+        return `https://backend-ravayahijab.up.railway.app/files/products/${product.image}`
+      }
+      
+      // Fallback to local default image
+      return defaultProductImage
+    }
 
     // Utility functions
     const formatPrice = (price) => {
@@ -450,6 +477,7 @@ export default {
       formatDate,
       getStatusText,
       getStatusBadgeClass,
+      getProductImageUrl,
       updateQuantity,
       removeFromCart,
       fetchOrders,
