@@ -136,7 +136,7 @@ export default {
         }
         
         // Otherwise, assume it's from storage (API)
-        return `https://backend-production-1895.up.railway.app/storage/${product.image}`
+        return `https://backend-ravayahijab.up.railway.app/storage/${product.image}`
       }
       
       // Fallback to local default image
