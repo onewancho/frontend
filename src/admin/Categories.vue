@@ -431,14 +431,14 @@
                           </td>
                           <td class="py-4">
                             <div class="flex items-center space-x-2">
-                              <button class="btn btn-sm btn-ghost text-green-600 hover:bg-green-50">
+                              <button @click="viewProduct(product)" class="btn btn-sm btn-ghost text-green-600 hover:bg-green-50">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                 </svg>
                                 Lihat
                               </button>
-                              <button class="btn btn-sm btn-ghost text-orange-600 hover:bg-orange-50">
+                              <button @click="editProduct(product)" class="btn btn-sm btn-ghost text-orange-600 hover:bg-orange-50">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
@@ -647,16 +647,29 @@ export default {
     }
 
     const getProductImageUrl = (product) => {
+      console.log('Getting image URL for product:', product)
       if (product && product.image) {
+        console.log('Original image path:', product.image)
         // Handle both full URLs and relative paths
         if (product.image.startsWith('http')) {
+          console.log('Using full URL:', product.image)
           return product.image
         }
-        // Remove leading slash and /storage/ prefix if present
-        let imagePath = product.image.replace(/^\/+/, '').replace(/^storage\//, '')
-        return `https://backend-ravayahijab.up.railway.app/files/products/${imagePath}`
+        // Remove leading slash and /storage/ prefix if present, handle different path formats
+        let imagePath = product.image.replace(/^\/+/, '').replace(/^storage\//, '').replace(/^products\//, '')
+        // Ensure the path doesn't start with files/products if already present
+        if (imagePath.startsWith('files/products/')) {
+          const finalUrl = `https://backend-ravayahijab.up.railway.app/${imagePath}`
+          console.log('Using existing files/products path:', finalUrl)
+          return finalUrl
+        }
+        const finalUrl = `https://backend-ravayahijab.up.railway.app/files/products/${imagePath}`
+        console.log('Constructed image URL:', finalUrl)
+        return finalUrl
       }
-      return '/images/placeholder-product.jpg'
+      console.log('No image found, using placeholder')
+      // Use a data URL placeholder instead of path that might not exist
+      return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0zNS44MzMzIDMzLjMzMzNDMzUuODMzMyAzMC4xIDM4LjQzMzMgMjcuNSA0MS42NjY3IDI3LjVDNDUgMjcuNSA0Ny41IDMwLjEgNDcuNSAzMy4zMzMzQzQ3LjUgMzYuNjY2NyA0NSAzOS4xNjY3IDQxLjY2NjcgMzkuMTY2N0MzOC40MzMzIDM5LjE2NjcgMzUuODMzMyAzNi42NjY3IDM1LjgzMzMgMzMuMzMzM1oiIGZpbGw9IiM5Q0E5QTYiLz4KPHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0yNS41IDQ1LjgzMzNINzQuNUw2OS4xNjY3IDY2LjY2NjdIMzAuODMzM0wyNS41IDQ1LjgzMzNaIiBmaWxsPSIjOUNBOUE2Ii8+Cjwvc3ZnPgo='
     }
 
     const handleImageError = (event) => {
@@ -688,6 +701,20 @@ export default {
         return 0
       }
       return categoryProducts.value.filter(product => (product.stock || 0) <= 0).length
+    }
+
+    const viewProduct = (product) => {
+      console.log('Viewing product:', product)
+      // Navigate to product detail or open product modal
+      // For now, we'll show an alert - you can implement proper navigation
+      alert(`Melihat produk: ${product.name}\nHarga: Rp ${formatPrice(product.price)}\nStok: ${product.stock || 0}`)
+    }
+
+    const editProduct = (product) => {
+      console.log('Editing product:', product)
+      // Navigate to product edit page or open edit modal
+      // For now, we'll show an alert - you can implement proper navigation
+      alert(`Edit produk: ${product.name}\nID: ${product.id}`)
     }
 
     const closeModal = () => {
@@ -731,7 +758,9 @@ export default {
       formatPrice,
       getTotalProducts,
       getAvailableProducts,
-      getOutOfStockProducts
+      getOutOfStockProducts,
+      viewProduct,
+      editProduct
     }
   }
 }
