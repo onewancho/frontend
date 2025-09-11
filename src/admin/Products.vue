@@ -558,26 +558,59 @@ export default {
             'Data Tidak Lengkap',
             'Nama produk, harga, dan kategori harus diisi.'
           )
+          isLoading.value = false
+          return
+        }
+
+        // Validate price is a valid number
+        const price = parseFloat(productForm.value.price)
+        if (isNaN(price) || price <= 0) {
+          showNotification(
+            'error',
+            'Harga Tidak Valid',
+            'Harga produk harus berupa angka yang valid dan lebih dari 0.'
+          )
+          isLoading.value = false
+          return
+        }
+
+        // Validate stock is a valid number
+        const stock = parseInt(productForm.value.stock)
+        if (isNaN(stock) || stock < 0) {
+          showNotification(
+            'error',
+            'Stok Tidak Valid',
+            'Stok produk harus berupa angka yang valid dan tidak boleh negatif.'
+          )
+          isLoading.value = false
           return
         }
 
         // Create FormData for file upload
         const formData = new FormData()
-        formData.append('name', productForm.value.name)
-        formData.append('description', productForm.value.description || '')
-        formData.append('price', productForm.value.price)
-        formData.append('stock', productForm.value.stock)
-        formData.append('category_id', productForm.value.category_id)
-        formData.append('status', productForm.value.status)
+        formData.append('name', productForm.value.name.trim())
+        formData.append('description', productForm.value.description?.trim() || '')
+        formData.append('price', price.toString())
+        formData.append('stock', stock.toString())
+        formData.append('category_id', productForm.value.category_id.toString())
+        formData.append('status', productForm.value.status || 'active')
         
         if (selectedImage.value) {
           formData.append('image', selectedImage.value)
         }
 
+        // Debug logging
+        console.log('Submitting product with FormData:')
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}:`, value)
+        }
+
         console.log('Submitting product with data:', {
           name: productForm.value.name,
           price: productForm.value.price,
+          stock: productForm.value.stock,
           category_id: productForm.value.category_id,
+          status: productForm.value.status,
           isEditing,
           hasImage: !!selectedImage.value
         })
@@ -610,10 +643,20 @@ export default {
           }
         } else {
           console.error('Failed to save product:', result.error)
+          
+          // Show detailed validation errors if available
+          let errorMessage = result.error || result.message || 'Silakan coba lagi.'
+          
+          // If the error contains validation details, format them nicely
+          if (result.errors && typeof result.errors === 'object') {
+            const validationErrors = Object.values(result.errors).flat()
+            errorMessage = validationErrors.join(', ')
+          }
+          
           showNotification(
             'error',
             isEditing ? 'Gagal Memperbarui Produk' : 'Gagal Menambah Produk',
-            `Terjadi kesalahan: ${result.error || result.message || 'Silakan coba lagi.'}`
+            `Terjadi kesalahan: ${errorMessage}`
           )
         }
       } catch (error) {

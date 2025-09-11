@@ -183,7 +183,15 @@ export const productService = {
       return { success: true, data: response.data }
     } catch (error) {
       console.error('Create product error:', error.response?.data)
-      return { success: false, error: error.response?.data?.message || 'Failed to create product' }
+      console.error('Create product status:', error.response?.status)
+      
+      // Return detailed error information
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to create product',
+        errors: error.response?.data?.errors || null,
+        status: error.response?.status
+      }
     }
   },
 
