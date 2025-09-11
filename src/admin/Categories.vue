@@ -536,6 +536,25 @@ export default {
       message: ''
     })
 
+    // Notification functions
+    const showNotification = (type, title, message) => {
+      notification.value = {
+        show: true,
+        type,
+        title,
+        message
+      }
+      
+      // Auto hide after 5 seconds
+      setTimeout(() => {
+        hideNotification()
+      }, 5000)
+    }
+
+    const hideNotification = () => {
+      notification.value.show = false
+    }
+
     const categoryForm = ref({
       name: '',
       description: '',
