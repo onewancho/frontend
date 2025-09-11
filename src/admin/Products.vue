@@ -596,42 +596,51 @@ export default {
         }
 
         // Debug logging
-        console.log('Submitting product with data:', productData)
+        console.log('🔍 Submitting product with data:', productData)
+        console.log('🖼️ Selected image:', selectedImage.value ? 'Yes' : 'No')
+        console.log('✏️ Is editing:', isEditing)
 
         let result
         
         if (selectedImage.value) {
           // Use FormData for image upload
+          console.log('📁 Using FormData approach with image upload')
           const formData = new FormData()
           Object.keys(productData).forEach(key => {
             formData.append(key, productData[key].toString())
           })
           formData.append('image', selectedImage.value)
           
-          console.log('Using FormData with image')
+          console.log('📋 FormData contents:')
           for (let [key, value] of formData.entries()) {
-            console.log(`${key}:`, value)
+            console.log(`  ${key}:`, value)
           }
 
           if (isEditing) {
+            console.log('🔄 Calling updateProductWithImage...')
             result = await productService.updateProductWithImage(editingProduct.value.id, formData)
           } else {
+            console.log('➕ Calling createProductWithImage...')
             result = await productService.createProductWithImage(formData)
           }
         } else {
           // Use JSON for data without image
-          console.log('Using JSON without image')
+          console.log('📄 Using JSON approach without image')
+          console.log('📋 JSON data:', JSON.stringify(productData, null, 2))
           
           if (isEditing) {
+            console.log('🔄 Calling updateProduct...')
             result = await productService.updateProduct(editingProduct.value.id, productData)
           } else {
+            console.log('➕ Calling createProduct...')
             result = await productService.createProduct(productData)
           }
         }
 
-        console.log('Product submit result:', result)
+        console.log('📊 Product submit result:', result)
 
         if (result.success) {
+          console.log('✅ Product successfully saved!')
           await loadProducts()
           closeModal()
           
@@ -650,15 +659,20 @@ export default {
             )
           }
         } else {
-          console.error('Failed to save product:', result.error)
+          console.error('❌ Failed to save product:', result)
+          console.error('❌ Error details:', result.error)
+          console.error('❌ Validation errors:', result.errors)
+          console.error('❌ HTTP status:', result.status)
           
           // Show detailed validation errors if available
           let errorMessage = result.error || result.message || 'Silakan coba lagi.'
           
           // If the error contains validation details, format them nicely
           if (result.errors && typeof result.errors === 'object') {
+            console.log('📝 Processing validation errors:', result.errors)
             const validationErrors = Object.values(result.errors).flat()
             errorMessage = validationErrors.join(', ')
+            console.log('📝 Formatted error message:', errorMessage)
           }
           
           showNotification(
@@ -668,7 +682,11 @@ export default {
           )
         }
       } catch (error) {
-        console.error('Error saving product:', error)
+        console.error('💥 Exception in submitProduct:', error)
+        console.error('💥 Error stack:', error.stack)
+        console.error('💥 Error response:', error.response?.data)
+        console.error('💥 Error status:', error.response?.status)
+        
         const isEditing = showEditModal.value && editingProduct.value
         showNotification(
           'error',
