@@ -29,7 +29,48 @@ export const authService = {
   // Register dengan API
   async register(userData) {
     try {
-      const response = await api.post('/auth/register', userData)
+      console.log('🚀 Registering user...')
+      
+      // Clean and validate registration data
+      const cleanData = {
+        name: String(userData.name || '').trim(),
+        email: String(userData.email || '').trim().toLowerCase(),
+        password: String(userData.password || ''),
+        password_confirmation: String(userData.password_confirmation || userData.password || '')
+      }
+      
+      // Validate required fields
+      if (!cleanData.name) {
+        return { success: false, error: 'Nama lengkap wajib diisi' }
+      }
+      
+      if (!cleanData.email || !cleanData.email.includes('@')) {
+        return { success: false, error: 'Email yang valid wajib diisi' }
+      }
+      
+      if (!cleanData.password || cleanData.password.length < 8) {
+        return { success: false, error: 'Password minimal 8 karakter' }
+      }
+      
+      // Check password complexity
+      const hasUpperCase = /[A-Z]/.test(cleanData.password)
+      const hasLowerCase = /[a-z]/.test(cleanData.password)
+      const hasNumbers = /\d/.test(cleanData.password)
+      
+      if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
+        return { 
+          success: false, 
+          error: 'Password harus mengandung minimal 1 huruf besar, 1 huruf kecil, dan 1 angka' 
+        }
+      }
+      
+      if (cleanData.password !== cleanData.password_confirmation) {
+        return { success: false, error: 'Konfirmasi password tidak sama' }
+      }
+      
+      console.log('📋 Clean registration data:', { ...cleanData, password: '[HIDDEN]', password_confirmation: '[HIDDEN]' })
+      
+      const response = await api.post('/auth/register', cleanData)
       
       if (response.data.success) {
         const { user, token } = response.data.data
@@ -38,12 +79,29 @@ export const authService = {
         localStorage.setItem('auth_token', token)
         localStorage.setItem('user_data', JSON.stringify(user))
         
+        console.log('✅ Registration successful:', user.name)
         return { success: true, data: { user, token } }
       }
       
       return { success: false, error: response.data.message || 'Registration failed' }
     } catch (error) {
-      console.error('Registration error:', error)
+      console.error('❌ Registration error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: error.config?.url
+      })
+      
+      // Handle validation errors
+      if (error.response?.status === 422 && error.response?.data?.errors) {
+        const validationErrors = Object.values(error.response.data.errors).flat()
+        return { 
+          success: false, 
+          error: validationErrors.join(', '),
+          errors: error.response.data.errors
+        }
+      }
+      
       return { 
         success: false, 
         error: error.response?.data?.message || 'Registration failed' 
@@ -535,9 +593,12 @@ export const userService = {
   // Admin: Get all users
   async getUsers() {
     try {
+      console.log('📡 Fetching users...')
       const response = await api.get('/admin/users')
+      console.log('✅ Users response:', response.data)
       return { success: true, data: response.data }
     } catch (error) {
+      console.error('❌ Get users error:', error.response?.data)
       return { success: false, error: error.response?.data?.message || 'Failed to fetch users' }
     }
   },
@@ -545,45 +606,146 @@ export const userService = {
   // Admin: Create user
   async createUser(userData) {
     try {
-      console.log('🔍 userService.createUser called with:', userData)
-      const response = await api.post('/admin/users', userData)
-      console.log('📥 userService.createUser response:', response)
+      console.log('� Creating user with data:', userData)
+      
+      // Clean and validate user data
+      const cleanData = {
+        name: String(userData.name || '').trim(),
+        email: String(userData.email || '').trim().toLowerCase(),
+        password: String(userData.password || ''),
+        role: String(userData.role || 'user'),
+        status: String(userData.status || 'active')
+      }
+      
+      // Validate required fields
+      if (!cleanData.name) {
+        return { success: false, error: 'Nama user wajib diisi' }
+      }
+      
+      if (!cleanData.email || !cleanData.email.includes('@')) {
+        return { success: false, error: 'Email yang valid wajib diisi' }
+      }
+      
+      if (!cleanData.password || cleanData.password.length < 8) {
+        return { success: false, error: 'Password minimal 8 karakter' }
+      }
+      
+      // Check password complexity
+      const hasUpperCase = /[A-Z]/.test(cleanData.password)
+      const hasLowerCase = /[a-z]/.test(cleanData.password)
+      const hasNumbers = /\d/.test(cleanData.password)
+      
+      if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
+        return { 
+          success: false, 
+          error: 'Password harus mengandung minimal 1 huruf besar, 1 huruf kecil, dan 1 angka' 
+        }
+      }
+      
+      console.log('📋 Clean user data:', { ...cleanData, password: '[HIDDEN]' })
+      
+      const response = await api.post('/admin/users', cleanData)
+      console.log('✅ Create user response:', response.data)
       return { success: true, data: response.data }
     } catch (error) {
-      console.error('❌ userService.createUser error:', error)
-      console.error('❌ Response data:', error.response?.data)
-      console.error('❌ Response status:', error.response?.status)
-      return { success: false, error: error.response?.data?.message || 'Failed to create user' }
+      console.error('❌ Create user error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: error.config?.url
+      })
+      
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to create user',
+        errors: error.response?.data?.errors || null,
+        details: error.response?.data
+      }
     }
   },
 
   // Admin: Update user
   async updateUser(id, userData) {
     try {
-      const response = await api.put(`/admin/users/${id}`, userData)
+      console.log('🔄 Updating user:', id, userData)
+      
+      // Clean user data (password is optional for updates)
+      const cleanData = {
+        name: String(userData.name || '').trim(),
+        email: String(userData.email || '').trim().toLowerCase(),
+        role: String(userData.role || 'user'),
+        status: String(userData.status || 'active')
+      }
+      
+      // Only include password if provided
+      if (userData.password && userData.password.trim()) {
+        const password = String(userData.password).trim()
+        
+        if (password.length < 8) {
+          return { success: false, error: 'Password minimal 8 karakter' }
+        }
+        
+        const hasUpperCase = /[A-Z]/.test(password)
+        const hasLowerCase = /[a-z]/.test(password)
+        const hasNumbers = /\d/.test(password)
+        
+        if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
+          return { 
+            success: false, 
+            error: 'Password harus mengandung minimal 1 huruf besar, 1 huruf kecil, dan 1 angka' 
+          }
+        }
+        
+        cleanData.password = password
+      }
+      
+      console.log('📋 Clean update data:', { ...cleanData, password: cleanData.password ? '[HIDDEN]' : 'Not changed' })
+      
+      const response = await api.put(`/admin/users/${id}`, cleanData)
+      console.log('✅ Update user response:', response.data)
       return { success: true, data: response.data }
     } catch (error) {
-      return { success: false, error: error.response?.data?.message || 'Failed to update user' }
+      console.error('❌ Update user error:', {
+        status: error.response?.status,
+        data: error.response?.data
+      })
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to update user',
+        errors: error.response?.data?.errors || null
+      }
     }
   },
 
   // Admin: Delete user
   async deleteUser(id) {
     try {
+      console.log('🗑️ Deleting user:', id)
       await api.delete(`/admin/users/${id}`)
+      console.log('✅ User deleted successfully')
       return { success: true }
     } catch (error) {
-      return { success: false, error: error.response?.data?.message || 'Failed to delete user' }
+      console.error('❌ Delete user error:', error.response?.data)
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to delete user'
+      }
     }
   },
 
   // Admin: Toggle user status
   async toggleUserStatus(id) {
     try {
+      console.log('🔄 Toggling user status:', id)
       const response = await api.patch(`/admin/users/${id}/toggle-status`)
+      console.log('✅ Toggle status response:', response.data)
       return { success: true, data: response.data }
     } catch (error) {
-      return { success: false, error: error.response?.data?.message || 'Failed to toggle user status' }
+      console.error('❌ Toggle user status error:', error.response?.data)
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to toggle user status'
+      }
     }
   }
 }
