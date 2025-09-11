@@ -438,8 +438,8 @@
                                 </svg>
                                 Lihat
                               </button>
-                              <button @click="editProduct(product)" class="btn btn-sm btn-ghost text-orange-600 hover:bg-orange-50">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <button @click="editProduct(product)" class="btn btn-sm btn-outline btn-info">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                                 Edit
@@ -704,10 +704,9 @@ export default {
     }
 
     const viewProduct = (product) => {
-      console.log('Viewing product:', product)
-      // Navigate to product detail or open product modal
-      // For now, we'll show an alert - you can implement proper navigation
-      alert(`Melihat produk: ${product.name}\nHarga: Rp ${formatPrice(product.price)}\nStok: ${product.stock || 0}`)
+      console.log('Navigating to products page for product:', product)
+      // Navigate to admin products page
+      window.location.href = '/admin/products'
     }
 
     const editProduct = (product) => {
