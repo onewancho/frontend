@@ -113,7 +113,6 @@
                   <div class="flex items-center">
                     <div>
                       <div class="font-semibold text-gray-900">{{ category.name }}</div>
-                      <div class="text-sm text-gray-600">ID: #{{ category.id }}</div>
                     </div>
                   </div>
                 </td>
@@ -238,6 +237,91 @@
         </form>
       </div>
     </div>
+
+    <!-- View Category Modal -->
+    <div class="modal" :class="{ 'modal-open': showViewModal }">
+      <div class="modal-box max-w-2xl">
+        <div class="flex items-center justify-between pb-4 border-b">
+          <h3 class="font-bold text-xl text-gray-900">Detail Kategori</h3>
+          <button @click="closeViewModal" class="btn btn-sm btn-circle btn-ghost">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div v-if="viewingCategory" class="py-6 space-y-6">
+          <!-- Category Info Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Basic Info -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">ID Kategori</label>
+                <div class="text-lg font-semibold text-gray-900">#{{ viewingCategory.id }}</div>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kategori</label>
+                <div class="text-lg font-semibold text-gray-900">{{ viewingCategory.name }}</div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <span 
+                  class="badge"
+                  :class="viewingCategory.status === 'active' ? 'badge-success' : 'badge-warning'"
+                >
+                  {{ viewingCategory.status === 'active' ? '✅ Aktif' : '⏸️ Tidak Aktif' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Produk</label>
+                <div class="text-2xl font-bold text-blue-600">
+                  {{ viewingCategory.products_count || 0 }} produk
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Dibuat</label>
+                <div class="text-sm text-gray-600">{{ formatDate(viewingCategory.created_at) }}</div>
+              </div>
+
+              <div v-if="viewingCategory.updated_at">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Terakhir Diupdate</label>
+                <div class="text-sm text-gray-600">{{ formatDate(viewingCategory.updated_at) }}</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <p class="text-gray-700">
+                {{ viewingCategory.description || 'Tidak ada deskripsi untuk kategori ini.' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex justify-end space-x-3 pt-4 border-t">
+            <button @click="closeViewModal" class="btn btn-ghost">
+              Tutup
+            </button>
+            <button @click="editFromView(viewingCategory)" class="btn btn-info">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+              Edit Kategori
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -253,7 +337,9 @@ export default {
     const isLoading = ref(false)
     const showCreateModal = ref(false)
     const showEditModal = ref(false)
+    const showViewModal = ref(false)
     const editingCategory = ref(null)
+    const viewingCategory = ref(null)
 
     const categoryForm = ref({
       name: '',
@@ -347,17 +433,18 @@ export default {
     }
 
     const viewCategory = (category) => {
-      // Create detailed view modal content
-      const details = `
-        ID: ${category.id}
-        Nama: ${category.name}
-        Deskripsi: ${category.description || 'Tidak ada deskripsi'}
-        Status: ${category.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
-        Jumlah Produk: ${category.products_count || 0}
-        Dibuat: ${formatDate(category.created_at)}
-        ${category.updated_at ? `Diupdate: ${formatDate(category.updated_at)}` : ''}
-      `
-      alert(`Detail Kategori:\n\n${details}`)
+      viewingCategory.value = category
+      showViewModal.value = true
+    }
+
+    const closeViewModal = () => {
+      showViewModal.value = false
+      viewingCategory.value = null
+    }
+
+    const editFromView = (category) => {
+      closeViewModal()
+      editCategory(category)
     }
 
     const formatDate = (dateString) => {
@@ -392,12 +479,16 @@ export default {
       isLoading,
       showCreateModal,
       showEditModal,
+      showViewModal,
+      viewingCategory,
       categoryForm,
       submitCategory,
       updateCategoryStatus,
       editCategory,
       deleteCategory,
       viewCategory,
+      closeViewModal,
+      editFromView,
       formatDate,
       closeModal,
       loadCategories
