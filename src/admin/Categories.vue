@@ -186,52 +186,100 @@
 
     <!-- Create/Edit Modal -->
     <div class="modal" :class="{ 'modal-open': showCreateModal || showEditModal }">
-      <div class="modal-box">
-        <h3 class="font-bold text-lg mb-4">
-          {{ showEditModal ? 'Edit Kategori' : 'Tambah Kategori' }}
-        </h3>
+      <div class="modal-box max-w-2xl">
+        <div class="flex items-center justify-between pb-4 border-b">
+          <h3 class="font-bold text-xl text-gray-900">
+            {{ showEditModal ? 'Edit Kategori' : 'Tambah Kategori Baru' }}
+          </h3>
+          <button @click="closeModal" class="btn btn-sm btn-circle btn-ghost">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
         
-        <form @submit.prevent="submitCategory">
-          <div class="form-control mb-4">
+        <form @submit.prevent="submitCategory" class="py-6 space-y-6">
+          <!-- Category Name -->
+          <div class="form-control">
             <label class="label">
-              <span class="label-text">Nama Kategori</span>
+              <span class="label-text font-medium">Nama Kategori</span>
+              <span class="label-text-alt text-red-500">*</span>
             </label>
             <input 
               v-model="categoryForm.name" 
               type="text" 
-              class="input input-bordered"
-              placeholder="Masukkan nama kategori"
+              class="input input-bordered focus:border-primary"
+              placeholder="Contoh: Fashion, Elektronik, Makanan"
               required
             >
+            <label class="label">
+              <span class="label-text-alt text-gray-500">Nama kategori akan ditampilkan di website</span>
+            </label>
           </div>
 
-          <div class="form-control mb-4">
+          <!-- Description -->
+          <div class="form-control">
             <label class="label">
-              <span class="label-text">Deskripsi</span>
+              <span class="label-text font-medium">Deskripsi</span>
+              <span class="label-text-alt text-gray-500">Opsional</span>
             </label>
             <textarea 
               v-model="categoryForm.description" 
-              class="textarea textarea-bordered"
-              placeholder="Masukkan deskripsi kategori"
-              rows="3"
+              class="textarea textarea-bordered focus:border-primary h-24"
+              placeholder="Jelaskan kategori ini untuk memudahkan pengelolaan produk..."
             ></textarea>
-          </div>
-
-          <div class="form-control mb-6">
             <label class="label">
-              <span class="label-text">Status</span>
+              <span class="label-text-alt text-gray-500">Deskripsi membantu dalam pengelolaan produk</span>
             </label>
-            <select v-model="categoryForm.status" class="select select-bordered w-full">
-              <option value="active">✅ Aktif</option>
-              <option value="inactive">⏸️ Tidak Aktif</option>
-            </select>
           </div>
 
-          <div class="modal-action">
-            <button type="button" @click="closeModal" class="btn btn-ghost">Batal</button>
+          <!-- Status -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium">Status Kategori</span>
+            </label>
+            <div class="grid grid-cols-2 gap-4">
+              <label class="cursor-pointer">
+                <input 
+                  type="radio" 
+                  v-model="categoryForm.status" 
+                  value="active" 
+                  class="radio radio-success" 
+                />
+                <div class="ml-3">
+                  <div class="font-medium text-green-700">✅ Aktif</div>
+                  <div class="text-sm text-gray-500">Kategori dapat digunakan</div>
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input 
+                  type="radio" 
+                  v-model="categoryForm.status" 
+                  value="inactive" 
+                  class="radio radio-warning" 
+                />
+                <div class="ml-3">
+                  <div class="font-medium text-yellow-700">⏸️ Tidak Aktif</div>
+                  <div class="text-sm text-gray-500">Kategori disembunyikan</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex justify-end space-x-3 pt-4 border-t">
+            <button type="button" @click="closeModal" class="btn btn-ghost">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+              Batal
+            </button>
             <button type="submit" class="btn btn-primary" :disabled="isLoading">
-              <span v-if="isLoading" class="loading loading-spinner loading-sm"></span>
-              {{ showEditModal ? 'Update' : 'Simpan' }}
+              <span v-if="isLoading" class="loading loading-spinner loading-sm mr-2"></span>
+              <svg v-else class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              {{ showEditModal ? 'Simpan Perubahan' : 'Tambah Kategori' }}
             </button>
           </div>
         </form>
@@ -263,16 +311,6 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kategori</label>
                 <div class="text-lg font-semibold text-gray-900">{{ viewingCategory.name }}</div>
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <span 
-                  class="badge"
-                  :class="viewingCategory.status === 'active' ? 'badge-success' : 'badge-warning'"
-                >
-                  {{ viewingCategory.status === 'active' ? '✅ Aktif' : '⏸️ Tidak Aktif' }}
-                </span>
               </div>
             </div>
 
