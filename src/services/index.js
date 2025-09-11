@@ -170,10 +170,38 @@ export const productService = {
     }
   },
 
+  // Create product with image upload (Admin only)
+  async createProductWithImage(formData) {
+    try {
+      const response = await api.post('/admin/products', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      return { success: true, data: response.data }
+    } catch (error) {
+      return { success: false, error: error.response?.data?.message || 'Failed to create product' }
+    }
+  },
+
   // Update product (Admin only)
   async updateProduct(id, productData) {
     try {
       const response = await api.put(`/admin/products/${id}`, productData)
+      return { success: true, data: response.data }
+    } catch (error) {
+      return { success: false, error: error.response?.data?.message || 'Failed to update product' }
+    }
+  },
+
+  // Update product with image upload (Admin only)
+  async updateProductWithImage(id, formData) {
+    try {
+      const response = await api.post(`/admin/products/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
       return { success: true, data: response.data }
     } catch (error) {
       return { success: false, error: error.response?.data?.message || 'Failed to update product' }

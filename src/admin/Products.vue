@@ -302,6 +302,41 @@
             ></textarea>
           </div>
 
+          <!-- Upload Image Field -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium">Gambar Produk</span>
+            </label>
+            <input 
+              ref="imageInput"
+              type="file" 
+              accept="image/*"
+              @change="handleImageUpload"
+              class="file-input file-input-bordered w-full"
+            >
+            <label class="label">
+              <span class="label-text-alt text-gray-500">Format: JPG, PNG, JPEG (Max: 2MB)</span>
+            </label>
+            
+            <!-- Image Preview -->
+            <div v-if="imagePreview" class="mt-2">
+              <div class="flex items-center gap-3">
+                <img 
+                  :src="imagePreview" 
+                  alt="Preview" 
+                  class="w-16 h-16 object-cover rounded-lg border"
+                >
+                <button 
+                  type="button"
+                  @click="removeImagePreview"
+                  class="btn btn-sm btn-error btn-outline"
+                >
+                  Hapus
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div class="form-control">
             <label class="label">
               <span class="label-text font-medium">Status</span>
@@ -351,6 +386,9 @@ export default {
     const showCreateModal = ref(false)
     const showEditModal = ref(false)
     const editingProduct = ref(null)
+    const imageInput = ref(null)
+    const imagePreview = ref(null)
+    const selectedImage = ref(null)
 
     const productForm = ref({
       name: '',
@@ -448,10 +486,24 @@ export default {
       isLoading.value = true
       try {
         let result
+
+        // Create FormData for file upload
+        const formData = new FormData()
+        formData.append('name', productForm.value.name)
+        formData.append('description', productForm.value.description || '')
+        formData.append('price', productForm.value.price)
+        formData.append('stock', productForm.value.stock)
+        formData.append('category_id', productForm.value.category_id)
+        formData.append('status', productForm.value.status)
+        
+        if (selectedImage.value) {
+          formData.append('image', selectedImage.value)
+        }
+
         if (showEditModal.value && editingProduct.value) {
-          result = await productService.updateProduct(editingProduct.value.id, productForm.value)
+          result = await productService.updateProductWithImage(editingProduct.value.id, formData)
         } else {
-          result = await productService.createProduct(productForm.value)
+          result = await productService.createProductWithImage(formData)
         }
 
         if (result.success) {
@@ -477,6 +529,12 @@ export default {
         category_id: product.category_id,
         status: product.status
       }
+      
+      // Show existing image as preview if available
+      if (product.image) {
+        imagePreview.value = getProductImageUrl(product)
+      }
+      
       showEditModal.value = true
     }
 
@@ -509,10 +567,47 @@ export default {
       }
     }
 
+    const handleImageUpload = (event) => {
+      const file = event.target.files[0]
+      if (file) {
+        // Validate file size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+          alert('Ukuran file terlalu besar. Maksimal 2MB.')
+          event.target.value = ''
+          return
+        }
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          alert('File harus berupa gambar.')
+          event.target.value = ''
+          return
+        }
+
+        selectedImage.value = file
+
+        // Create preview
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          imagePreview.value = e.target.result
+        }
+        reader.readAsDataURL(file)
+      }
+    }
+
+    const removeImagePreview = () => {
+      imagePreview.value = null
+      selectedImage.value = null
+      if (imageInput.value) {
+        imageInput.value.value = ''
+      }
+    }
+
     const closeModal = () => {
       showCreateModal.value = false
       showEditModal.value = false
       editingProduct.value = null
+      removeImagePreview()
       productForm.value = {
         name: '',
         description: '',
@@ -535,10 +630,15 @@ export default {
       showCreateModal,
       showEditModal,
       productForm,
+      imageInput,
+      imagePreview,
+      selectedImage,
       formatCurrency,
       calculateAveragePrice,
       getProductImageUrl,
       handleImageError,
+      handleImageUpload,
+      removeImagePreview,
       submitProduct,
       editProduct,
       deleteProduct,
