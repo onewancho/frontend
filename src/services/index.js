@@ -163,34 +163,87 @@ export const productService = {
   // Create product (Admin only)
   async createProduct(productData) {
     try {
-      const response = await api.post('/admin/products', productData)
+      console.log('🚀 Creating product with JSON data...')
+      
+      // Ensure data types are correct for backend validation
+      const cleanData = {
+        name: String(productData.name || '').trim(),
+        description: String(productData.description || '').trim(),
+        price: Number(productData.price),
+        stock: Number(productData.stock),
+        category_id: Number(productData.category_id),
+        status: String(productData.status || 'active')
+      }
+      
+      console.log('📋 Cleaned JSON payload:', cleanData)
+      
+      const response = await api.post('/admin/products', cleanData)
+      console.log('✅ Create product response:', response.data)
       return { success: true, data: response.data }
     } catch (error) {
-      return { success: false, error: error.response?.data?.message || 'Failed to create product' }
+      console.error('❌ Create product JSON error:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: error.config?.url
+      })
+      
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to create product',
+        errors: error.response?.data?.errors || null,
+        status: error.response?.status,
+        details: error.response?.data
+      }
     }
   },
 
   // Create product with image upload (Admin only)
   async createProductWithImage(formData) {
     try {
-      console.log('Creating product with FormData...')
-      const response = await api.post('/admin/products', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
+      console.log('🚀 Creating product with FormData...')
+      
+      // Create a new FormData to ensure clean data
+      const cleanFormData = new FormData()
+      
+      // Add data with proper types
+      for (let [key, value] of formData.entries()) {
+        if (key === 'image') {
+          cleanFormData.append(key, value)
+        } else if (key === 'price' || key === 'stock' || key === 'category_id') {
+          cleanFormData.append(key, String(Number(value)))
+        } else {
+          cleanFormData.append(key, String(value))
         }
-      })
-      console.log('Create product response:', response.data)
+      }
+      
+      // Debug log
+      console.log('📋 Clean FormData contents:')
+      for (let [key, value] of cleanFormData.entries()) {
+        if (value instanceof File) {
+          console.log(`  ${key}: File(${value.name}, ${value.size} bytes)`)
+        } else {
+          console.log(`  ${key}: ${value} (${typeof value})`)
+        }
+      }
+      
+      const response = await api.post('/admin/products', cleanFormData)
+      console.log('✅ Create product with image response:', response.data)
       return { success: true, data: response.data }
     } catch (error) {
-      console.error('Create product error:', error.response?.data)
-      console.error('Create product status:', error.response?.status)
+      console.error('❌ Create product FormData error:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: error.config?.url
+      })
       
-      // Return detailed error information
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Failed to create product',
+        error: error.response?.data?.message || 'Failed to create product with image',
         errors: error.response?.data?.errors || null,
-        status: error.response?.status
+        status: error.response?.status,
+        details: error.response?.data
       }
     }
   },
@@ -198,28 +251,73 @@ export const productService = {
   // Update product (Admin only)
   async updateProduct(id, productData) {
     try {
-      const response = await api.put(`/admin/products/${id}`, productData)
+      console.log('🔄 Updating product with JSON data...')
+      
+      // Ensure data types are correct
+      const cleanData = {
+        name: String(productData.name || '').trim(),
+        description: String(productData.description || '').trim(),
+        price: Number(productData.price),
+        stock: Number(productData.stock),
+        category_id: Number(productData.category_id),
+        status: String(productData.status || 'active')
+      }
+      
+      console.log('📋 Clean update data:', cleanData)
+      
+      const response = await api.put(`/admin/products/${id}`, cleanData)
+      console.log('✅ Update product response:', response.data)
       return { success: true, data: response.data }
     } catch (error) {
-      return { success: false, error: error.response?.data?.message || 'Failed to update product' }
+      console.error('❌ Update product error:', {
+        status: error.response?.status,
+        data: error.response?.data
+      })
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to update product',
+        errors: error.response?.data?.errors || null,
+        status: error.response?.status
+      }
     }
   },
 
   // Update product with image upload (Admin only)
   async updateProductWithImage(id, formData) {
     try {
-      // For Laravel/PHP backends that need method spoofing for file uploads
-      formData.append('_method', 'PUT')
+      console.log('🔄 Updating product with FormData...')
       
-      const response = await api.post(`/admin/products/${id}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
+      // Laravel method spoofing for PUT with FormData
+      const cleanFormData = new FormData()
+      
+      // Add _method for Laravel
+      cleanFormData.append('_method', 'PUT')
+      
+      // Add clean data
+      for (let [key, value] of formData.entries()) {
+        if (key === 'image') {
+          cleanFormData.append(key, value)
+        } else if (key === 'price' || key === 'stock' || key === 'category_id') {
+          cleanFormData.append(key, String(Number(value)))
+        } else {
+          cleanFormData.append(key, String(value))
         }
-      })
+      }
+      
+      const response = await api.post(`/admin/products/${id}`, cleanFormData)
+      console.log('✅ Update product with image response:', response.data)
       return { success: true, data: response.data }
     } catch (error) {
-      console.error('Update product error:', error.response?.data)
-      return { success: false, error: error.response?.data?.message || 'Failed to update product' }
+      console.error('❌ Update product with image error:', {
+        status: error.response?.status,
+        data: error.response?.data
+      })
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to update product',
+        errors: error.response?.data?.errors || null,
+        status: error.response?.status
+      }
     }
   },
 
@@ -345,9 +443,25 @@ export const categoryService = {
   // Get all categories (public)
   async getCategories() {
     try {
+      console.log('📡 Fetching categories...')
       const response = await api.get('/catalog/categories')
+      console.log('✅ Categories response:', response.data)
       return { success: true, data: response.data }
     } catch (error) {
+      console.error('❌ Get categories error:', error.response?.data)
+      return { success: false, error: error.response?.data?.message || 'Failed to fetch categories' }
+    }
+  },
+
+  // Admin: Get all categories
+  async getAdminCategories() {
+    try {
+      console.log('📡 Fetching admin categories...')
+      const response = await api.get('/admin/categories')
+      console.log('✅ Admin categories response:', response.data)
+      return { success: true, data: response.data }
+    } catch (error) {
+      console.error('❌ Get admin categories error:', error.response?.data)
       return { success: false, error: error.response?.data?.message || 'Failed to fetch categories' }
     }
   },
@@ -355,30 +469,64 @@ export const categoryService = {
   // Admin: Create category
   async createCategory(categoryData) {
     try {
-      const response = await api.post('/admin/categories', categoryData)
+      console.log('🚀 Creating category:', categoryData)
+      
+      const cleanData = {
+        name: String(categoryData.name || '').trim(),
+        description: String(categoryData.description || '').trim(),
+        status: String(categoryData.status || 'active')
+      }
+      
+      const response = await api.post('/admin/categories', cleanData)
+      console.log('✅ Create category response:', response.data)
       return { success: true, data: response.data }
     } catch (error) {
-      return { success: false, error: error.response?.data?.message || 'Failed to create category' }
+      console.error('❌ Create category error:', error.response?.data)
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to create category',
+        errors: error.response?.data?.errors || null
+      }
     }
   },
 
   // Admin: Update category
   async updateCategory(id, categoryData) {
     try {
-      const response = await api.put(`/admin/categories/${id}`, categoryData)
+      console.log('🔄 Updating category:', id, categoryData)
+      
+      const cleanData = {
+        name: String(categoryData.name || '').trim(),
+        description: String(categoryData.description || '').trim(),
+        status: String(categoryData.status || 'active')
+      }
+      
+      const response = await api.put(`/admin/categories/${id}`, cleanData)
+      console.log('✅ Update category response:', response.data)
       return { success: true, data: response.data }
     } catch (error) {
-      return { success: false, error: error.response?.data?.message || 'Failed to update category' }
+      console.error('❌ Update category error:', error.response?.data)
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to update category',
+        errors: error.response?.data?.errors || null
+      }
     }
   },
 
   // Admin: Delete category
   async deleteCategory(id) {
     try {
+      console.log('🗑️ Deleting category:', id)
       await api.delete(`/admin/categories/${id}`)
+      console.log('✅ Category deleted successfully')
       return { success: true }
     } catch (error) {
-      return { success: false, error: error.response?.data?.message || 'Failed to delete category' }
+      console.error('❌ Delete category error:', error.response?.data)
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to delete category'
+      }
     }
   }
 }

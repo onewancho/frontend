@@ -6,12 +6,12 @@ const BASE_URL = 'https://backend-ravayahijab.up.railway.app/api'
 // Create axios instance
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
-  withCredentials: true, // Include cookies
-  withXSRFToken: true,
+  timeout: 30000, // Increased timeout
+  withCredentials: false, // Railway doesn't need cookies
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest'
   },
 })
 
@@ -21,11 +21,23 @@ api.interceptors.request.use(
     const token = localStorage.getItem('auth_token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
-      console.log('🔑 Added auth token to request:', config.url)
-      console.log('🔑 Token preview:', token.substring(0, 20) + '...')
-    } else {
-      console.log('⚠️ No auth token found for request:', config.url)
+      console.log('🔑 Auth token added to request:', config.url)
     }
+    
+    // Handle FormData properly
+    if (config.data instanceof FormData) {
+      // Remove Content-Type for FormData to let browser set boundary
+      delete config.headers['Content-Type']
+      console.log('📁 FormData detected, removing Content-Type header')
+    }
+    
+    console.log('📤 Request config:', {
+      url: config.url,
+      method: config.method,
+      headers: config.headers,
+      data: config.data instanceof FormData ? 'FormData' : config.data
+    })
+    
     return config
   },
   (error) => {

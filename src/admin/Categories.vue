@@ -564,20 +564,23 @@ export default {
     const loadCategories = async () => {
       isPageLoading.value = true
       try {
-        console.log('Loading categories...')
-        const result = await categoryService.getCategories()
-        console.log('Categories result:', result)
+        console.log('📡 Loading categories...')
+        // Use admin endpoint for complete category data
+        const result = await categoryService.getAdminCategories()
+        console.log('📊 Categories result:', result)
         
         if (result.success) {
           categories.value = result.data.data || result.data || []
-          console.log('Categories loaded:', categories.value)
+          console.log('✅ Categories loaded:', categories.value.length, 'items')
         } else {
-          console.error('Failed to load categories:', result.error)
+          console.error('❌ Failed to load categories:', result.error)
           categories.value = []
+          showNotification('error', 'Gagal Memuat Data', result.error || 'Tidak dapat memuat data kategori')
         }
       } catch (error) {
-        console.error('Error loading categories:', error)
+        console.error('❌ Error loading categories:', error)
         categories.value = []
+        showNotification('error', 'Error', 'Terjadi kesalahan saat memuat kategori')
       } finally {
         isPageLoading.value = false
       }

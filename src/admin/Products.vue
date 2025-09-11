@@ -550,54 +550,66 @@ export default {
       try {
         const isEditing = showEditModal.value && editingProduct.value
 
-        // Validate required fields
-        if (!productForm.value.name || !productForm.value.price || !productForm.value.category_id) {
-          showNotification(
-            'error',
-            'Data Tidak Lengkap',
-            'Nama produk, harga, dan kategori harus diisi.'
-          )
+        // Validate required fields dengan lebih ketat
+        if (!productForm.value.name?.trim()) {
+          showNotification('error', 'Nama Produk Wajib', 'Nama produk tidak boleh kosong.')
           isLoading.value = false
           return
         }
 
-        // Validate price is a valid number
-        const price = parseFloat(productForm.value.price)
+        if (!productForm.value.price || productForm.value.price <= 0) {
+          showNotification('error', 'Harga Tidak Valid', 'Harga produk harus lebih dari 0.')
+          isLoading.value = false
+          return
+        }
+
+        if (!productForm.value.category_id) {
+          showNotification('error', 'Kategori Wajib', 'Silakan pilih kategori produk.')
+          isLoading.value = false
+          return
+        }
+
+        if (productForm.value.stock < 0) {
+          showNotification('error', 'Stok Tidak Valid', 'Stok tidak boleh negatif.')
+          isLoading.value = false
+          return
+        }
+
+        // Convert and validate data types
+        const price = Number(productForm.value.price)
+        const stock = Number(productForm.value.stock || 0)
+        const categoryId = Number(productForm.value.category_id)
+
         if (isNaN(price) || price <= 0) {
-          showNotification(
-            'error',
-            'Harga Tidak Valid',
-            'Harga produk harus berupa angka yang valid dan lebih dari 0.'
-          )
+          showNotification('error', 'Harga Tidak Valid', 'Harga harus berupa angka yang valid.')
           isLoading.value = false
           return
         }
 
-        // Validate stock is a valid number
-        const stock = parseInt(productForm.value.stock)
         if (isNaN(stock) || stock < 0) {
-          showNotification(
-            'error',
-            'Stok Tidak Valid',
-            'Stok produk harus berupa angka yang valid dan tidak boleh negatif.'
-          )
+          showNotification('error', 'Stok Tidak Valid', 'Stok harus berupa angka yang valid.')
           isLoading.value = false
           return
         }
 
-        // Prepare data for API
+        if (isNaN(categoryId) || categoryId <= 0) {
+          showNotification('error', 'Kategori Tidak Valid', 'Silakan pilih kategori yang valid.')
+          isLoading.value = false
+          return
+        }
+
+        // Prepare clean data for API
         const productData = {
           name: productForm.value.name.trim(),
           description: productForm.value.description?.trim() || '',
           price: price,
           stock: stock,
-          category_id: parseInt(productForm.value.category_id),
+          category_id: categoryId,
           status: productForm.value.status || 'active'
         }
 
-        // Debug logging
-        console.log('🔍 Submitting product with data:', productData)
-        console.log('🖼️ Selected image:', selectedImage.value ? 'Yes' : 'No')
+        console.log('🔍 Final product data:', productData)
+        console.log('🖼️ Has image:', !!selectedImage.value)
         console.log('✏️ Is editing:', isEditing)
 
         let result
