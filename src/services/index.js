@@ -173,13 +173,16 @@ export const productService = {
   // Create product with image upload (Admin only)
   async createProductWithImage(formData) {
     try {
+      console.log('Creating product with FormData...')
       const response = await api.post('/admin/products', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       })
+      console.log('Create product response:', response.data)
       return { success: true, data: response.data }
     } catch (error) {
+      console.error('Create product error:', error.response?.data)
       return { success: false, error: error.response?.data?.message || 'Failed to create product' }
     }
   },
@@ -197,6 +200,9 @@ export const productService = {
   // Update product with image upload (Admin only)
   async updateProductWithImage(id, formData) {
     try {
+      // For Laravel/PHP backends that need method spoofing for file uploads
+      formData.append('_method', 'PUT')
+      
       const response = await api.post(`/admin/products/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -204,6 +210,7 @@ export const productService = {
       })
       return { success: true, data: response.data }
     } catch (error) {
+      console.error('Update product error:', error.response?.data)
       return { success: false, error: error.response?.data?.message || 'Failed to update product' }
     }
   },

@@ -1,5 +1,39 @@
 <template>
   <div class="min-h-screen bg-gray-50">
+    <!-- Notification Toast -->
+    <div v-if="notification.show" class="fixed top-4 right-4 z-50 max-w-md animate-pulse">
+      <div class="alert shadow-xl border-0" :class="{
+        'alert-success bg-green-500 text-white': notification.type === 'success',
+        'alert-error bg-red-500 text-white': notification.type === 'error',
+        'alert-warning bg-yellow-500 text-white': notification.type === 'warning',
+        'alert-info bg-blue-500 text-white': notification.type === 'info'
+      }">
+        <div class="flex-1">
+          <svg v-if="notification.type === 'success'" class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <svg v-else-if="notification.type === 'error'" class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <svg v-else-if="notification.type === 'warning'" class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.664-.833-2.464 0L4.35 18.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
+          <svg v-else class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <div>
+            <h3 class="font-bold">{{ notification.title }}</h3>
+            <div class="text-xs">{{ notification.message }}</div>
+          </div>
+        </div>
+        <button @click="hideNotification" class="btn btn-sm btn-ghost">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
     <!-- Header -->
     <div class="bg-white shadow-sm border-b border-gray-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -392,6 +426,33 @@ export default {
     const imagePreview = ref(null)
     const selectedImage = ref(null)
 
+    // Notification state
+    const notification = ref({
+      show: false,
+      type: 'success', // 'success', 'error', 'warning', 'info'
+      title: '',
+      message: ''
+    })
+
+    // Notification functions
+    const showNotification = (type, title, message) => {
+      notification.value = {
+        show: true,
+        type,
+        title,
+        message
+      }
+      
+      // Auto hide after 5 seconds
+      setTimeout(() => {
+        hideNotification()
+      }, 5000)
+    }
+
+    const hideNotification = () => {
+      notification.value.show = false
+    }
+
     const productForm = ref({
       name: '',
       description: '',
@@ -488,6 +549,17 @@ export default {
       isLoading.value = true
       try {
         let result
+        const isEditing = showEditModal.value && editingProduct.value
+
+        // Validate required fields
+        if (!productForm.value.name || !productForm.value.price || !productForm.value.category_id) {
+          showNotification(
+            'error',
+            'Data Tidak Lengkap',
+            'Nama produk, harga, dan kategori harus diisi.'
+          )
+          return
+        }
 
         // Create FormData for file upload
         const formData = new FormData()
@@ -502,20 +574,56 @@ export default {
           formData.append('image', selectedImage.value)
         }
 
-        if (showEditModal.value && editingProduct.value) {
+        console.log('Submitting product with data:', {
+          name: productForm.value.name,
+          price: productForm.value.price,
+          category_id: productForm.value.category_id,
+          isEditing,
+          hasImage: !!selectedImage.value
+        })
+
+        if (isEditing) {
           result = await productService.updateProductWithImage(editingProduct.value.id, formData)
         } else {
           result = await productService.createProductWithImage(formData)
         }
 
+        console.log('Product submit result:', result)
+
         if (result.success) {
           await loadProducts()
           closeModal()
+          
+          // Show success notification
+          if (isEditing) {
+            showNotification(
+              'success',
+              'Berhasil Memperbarui Produk',
+              `Produk "${productForm.value.name}" berhasil diperbarui.`
+            )
+          } else {
+            showNotification(
+              'success',
+              'Berhasil Menambah Produk',
+              `Produk "${productForm.value.name}" berhasil ditambahkan ke sistem.`
+            )
+          }
         } else {
           console.error('Failed to save product:', result.error)
+          showNotification(
+            'error',
+            isEditing ? 'Gagal Memperbarui Produk' : 'Gagal Menambah Produk',
+            `Terjadi kesalahan: ${result.error || result.message || 'Silakan coba lagi.'}`
+          )
         }
       } catch (error) {
         console.error('Error saving product:', error)
+        const isEditing = showEditModal.value && editingProduct.value
+        showNotification(
+          'error',
+          isEditing ? 'Gagal Memperbarui Produk' : 'Gagal Menambah Produk',
+          'Terjadi kesalahan saat menyimpan produk. Silakan coba lagi.'
+        )
       } finally {
         isLoading.value = false
       }
@@ -541,16 +649,35 @@ export default {
     }
 
     const deleteProduct = async (id) => {
-      if (confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
+      const productToDelete = products.value.find(prod => prod.id === id)
+      const productName = productToDelete?.name || 'produk'
+      
+      if (confirm(`Apakah Anda yakin ingin menghapus produk "${productName}"?`)) {
         try {
           const result = await productService.deleteProduct(id)
+          
           if (result.success) {
             await loadProducts()
+            showNotification(
+              'success',
+              'Berhasil Menghapus Produk',
+              `Produk "${productName}" berhasil dihapus dari sistem.`
+            )
           } else {
             console.error('Failed to delete product:', result.error)
+            showNotification(
+              'error',
+              'Gagal Menghapus Produk',
+              `Terjadi kesalahan saat menghapus produk "${productName}": ${result.error || 'Silakan coba lagi.'}`
+            )
           }
         } catch (error) {
           console.error('Error deleting product:', error)
+          showNotification(
+            'error',
+            'Terjadi Kesalahan',
+            `Terjadi kesalahan saat menghapus produk "${productName}". Silakan coba lagi.`
+          )
         }
       }
     }
@@ -646,6 +773,7 @@ export default {
       imageInput,
       imagePreview,
       selectedImage,
+      notification,
       formatCurrency,
       calculateAveragePrice,
       getProductImageUrl,
@@ -657,7 +785,9 @@ export default {
       deleteProduct,
       updateProductStatus,
       closeModal,
-      loadProducts
+      loadProducts,
+      showNotification,
+      hideNotification
     }
   }
 }
