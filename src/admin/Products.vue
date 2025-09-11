@@ -548,7 +548,6 @@ export default {
     const submitProduct = async () => {
       isLoading.value = true
       try {
-        let result
         const isEditing = showEditModal.value && editingProduct.value
 
         // Validate required fields
@@ -586,39 +585,48 @@ export default {
           return
         }
 
-        // Create FormData for file upload
-        const formData = new FormData()
-        formData.append('name', productForm.value.name.trim())
-        formData.append('description', productForm.value.description?.trim() || '')
-        formData.append('price', price.toString())
-        formData.append('stock', stock.toString())
-        formData.append('category_id', productForm.value.category_id.toString())
-        formData.append('status', productForm.value.status || 'active')
-        
-        if (selectedImage.value) {
-          formData.append('image', selectedImage.value)
+        // Prepare data for API
+        const productData = {
+          name: productForm.value.name.trim(),
+          description: productForm.value.description?.trim() || '',
+          price: price,
+          stock: stock,
+          category_id: parseInt(productForm.value.category_id),
+          status: productForm.value.status || 'active'
         }
 
         // Debug logging
-        console.log('Submitting product with FormData:')
-        for (let [key, value] of formData.entries()) {
-          console.log(`${key}:`, value)
-        }
+        console.log('Submitting product with data:', productData)
 
-        console.log('Submitting product with data:', {
-          name: productForm.value.name,
-          price: productForm.value.price,
-          stock: productForm.value.stock,
-          category_id: productForm.value.category_id,
-          status: productForm.value.status,
-          isEditing,
-          hasImage: !!selectedImage.value
-        })
+        let result
+        
+        if (selectedImage.value) {
+          // Use FormData for image upload
+          const formData = new FormData()
+          Object.keys(productData).forEach(key => {
+            formData.append(key, productData[key].toString())
+          })
+          formData.append('image', selectedImage.value)
+          
+          console.log('Using FormData with image')
+          for (let [key, value] of formData.entries()) {
+            console.log(`${key}:`, value)
+          }
 
-        if (isEditing) {
-          result = await productService.updateProductWithImage(editingProduct.value.id, formData)
+          if (isEditing) {
+            result = await productService.updateProductWithImage(editingProduct.value.id, formData)
+          } else {
+            result = await productService.createProductWithImage(formData)
+          }
         } else {
-          result = await productService.createProductWithImage(formData)
+          // Use JSON for data without image
+          console.log('Using JSON without image')
+          
+          if (isEditing) {
+            result = await productService.updateProduct(editingProduct.value.id, productData)
+          } else {
+            result = await productService.createProduct(productData)
+          }
         }
 
         console.log('Product submit result:', result)
