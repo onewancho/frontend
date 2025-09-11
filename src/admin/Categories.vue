@@ -186,10 +186,10 @@
 
     <!-- Create/Edit Modal -->
     <div class="modal" :class="{ 'modal-open': showCreateModal || showEditModal }">
-      <div class="modal-box max-w-2xl">
+      <div class="modal-box max-w-xl">
         <div class="flex items-center justify-between pb-4 border-b">
           <h3 class="font-bold text-xl text-gray-900">
-            {{ showEditModal ? 'Edit Kategori' : 'Tambah Kategori Baru' }}
+            {{ showEditModal ? '✏️ Edit Kategori' : '➕ Tambah Kategori Baru' }}
           </h3>
           <button @click="closeModal" class="btn btn-sm btn-circle btn-ghost">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -202,84 +202,39 @@
           <!-- Category Name -->
           <div class="form-control">
             <label class="label">
-              <span class="label-text font-medium">Nama Kategori</span>
-              <span class="label-text-alt text-red-500">*</span>
+              <span class="label-text font-semibold text-gray-700">📝 Nama Kategori</span>
+              <span class="label-text-alt text-red-500 font-bold">*</span>
             </label>
             <input 
               v-model="categoryForm.name" 
               type="text" 
-              class="input input-bordered focus:border-primary"
-              placeholder="Contoh: Fashion, Elektronik, Makanan"
+              class="input input-bordered input-lg focus:border-primary focus:outline-none"
+              placeholder="Masukkan nama kategori..."
               required
             >
-            <label class="label">
-              <span class="label-text-alt text-gray-500">Nama kategori akan ditampilkan di website</span>
-            </label>
           </div>
 
           <!-- Description -->
           <div class="form-control">
             <label class="label">
-              <span class="label-text font-medium">Deskripsi</span>
-              <span class="label-text-alt text-gray-500">Opsional</span>
+              <span class="label-text font-semibold text-gray-700">📄 Deskripsi</span>
+              <span class="label-text-alt text-gray-400">Opsional</span>
             </label>
             <textarea 
               v-model="categoryForm.description" 
-              class="textarea textarea-bordered focus:border-primary h-24"
-              placeholder="Jelaskan kategori ini untuk memudahkan pengelolaan produk..."
+              class="textarea textarea-bordered textarea-lg focus:border-primary focus:outline-none h-28"
+              placeholder="Jelaskan kategori ini untuk memudahkan pengelolaan..."
             ></textarea>
-            <label class="label">
-              <span class="label-text-alt text-gray-500">Deskripsi membantu dalam pengelolaan produk</span>
-            </label>
-          </div>
-
-          <!-- Status -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-medium">Status Kategori</span>
-            </label>
-            <div class="grid grid-cols-2 gap-4">
-              <label class="cursor-pointer">
-                <input 
-                  type="radio" 
-                  v-model="categoryForm.status" 
-                  value="active" 
-                  class="radio radio-success" 
-                />
-                <div class="ml-3">
-                  <div class="font-medium text-green-700">✅ Aktif</div>
-                  <div class="text-sm text-gray-500">Kategori dapat digunakan</div>
-                </div>
-              </label>
-              <label class="cursor-pointer">
-                <input 
-                  type="radio" 
-                  v-model="categoryForm.status" 
-                  value="inactive" 
-                  class="radio radio-warning" 
-                />
-                <div class="ml-3">
-                  <div class="font-medium text-yellow-700">⏸️ Tidak Aktif</div>
-                  <div class="text-sm text-gray-500">Kategori disembunyikan</div>
-                </div>
-              </label>
-            </div>
           </div>
 
           <!-- Action Buttons -->
           <div class="flex justify-end space-x-3 pt-4 border-t">
-            <button type="button" @click="closeModal" class="btn btn-ghost">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-              Batal
+            <button type="button" @click="closeModal" class="btn btn-lg">
+              ❌ Batal
             </button>
-            <button type="submit" class="btn btn-primary" :disabled="isLoading">
+            <button type="submit" class="btn btn-primary btn-lg" :disabled="isLoading">
               <span v-if="isLoading" class="loading loading-spinner loading-sm mr-2"></span>
-              <svg v-else class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-              {{ showEditModal ? 'Simpan Perubahan' : 'Tambah Kategori' }}
+              <span v-else>{{ showEditModal ? '💾 Simpan Perubahan' : '✅ Tambah Kategori' }}</span>
             </button>
           </div>
         </form>
@@ -288,9 +243,9 @@
 
     <!-- View Category Modal -->
     <div class="modal" :class="{ 'modal-open': showViewModal }">
-      <div class="modal-box max-w-2xl">
+      <div class="modal-box max-w-4xl">
         <div class="flex items-center justify-between pb-4 border-b">
-          <h3 class="font-bold text-xl text-gray-900">Detail Kategori</h3>
+          <h3 class="font-bold text-2xl text-gray-900">🏷️ Detail Kategori</h3>
           <button @click="closeViewModal" class="btn btn-sm btn-circle btn-ghost">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -298,63 +253,106 @@
           </button>
         </div>
 
-        <div v-if="viewingCategory" class="py-6 space-y-6">
+        <div v-if="viewingCategory" class="py-6 space-y-8">
           <!-- Category Info Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Basic Info -->
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">ID Kategori</label>
-                <div class="text-lg font-semibold text-gray-900">#{{ viewingCategory.id }}</div>
-              </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kategori</label>
-                <div class="text-lg font-semibold text-gray-900">{{ viewingCategory.name }}</div>
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-blue-700 mb-1">🆔 ID Kategori</label>
+                  <div class="text-xl font-bold text-blue-900">#{{ viewingCategory.id }}</div>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-blue-700 mb-1">📝 Nama Kategori</label>
+                  <div class="text-xl font-bold text-blue-900">{{ viewingCategory.name }}</div>
+                </div>
               </div>
             </div>
 
             <!-- Statistics -->
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Produk</label>
-                <div class="text-2xl font-bold text-blue-600">
-                  {{ viewingCategory.products_count || 0 }} produk
+            <div class="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-green-700 mb-1">📦 Jumlah Produk</label>
+                  <div class="text-3xl font-bold text-green-800">
+                    {{ (categoryProducts && categoryProducts.length) || viewingCategory.products_count || 0 }}
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-green-700 mb-1">📅 Tanggal Dibuat</label>
+                  <div class="text-sm text-green-700">{{ formatDate(viewingCategory.created_at) }}</div>
                 </div>
               </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Dibuat</label>
-                <div class="text-sm text-gray-600">{{ formatDate(viewingCategory.created_at) }}</div>
-              </div>
-
-              <div v-if="viewingCategory.updated_at">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Terakhir Diupdate</label>
-                <div class="text-sm text-gray-600">{{ formatDate(viewingCategory.updated_at) }}</div>
-              </div>
             </div>
-          </div>
 
-          <!-- Description -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-gray-700">
+            <!-- Description -->
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl">
+              <label class="block text-sm font-medium text-purple-700 mb-2">📄 Deskripsi</label>
+              <p class="text-purple-800">
                 {{ viewingCategory.description || 'Tidak ada deskripsi untuk kategori ini.' }}
               </p>
             </div>
           </div>
 
+          <!-- Products Section -->
+          <div v-if="loadingProducts" class="text-center py-8">
+            <div class="loading loading-spinner loading-lg text-primary"></div>
+            <p class="mt-2 text-gray-600">Memuat produk kategori...</p>
+          </div>
+
+          <div v-else-if="categoryProducts && categoryProducts.length > 0">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-xl font-bold text-gray-900">🛍️ Produk dalam Kategori</h4>
+              <span class="badge badge-primary badge-lg">{{ categoryProducts.length }} produk</span>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div 
+                v-for="product in categoryProducts" 
+                :key="product.id"
+                class="card bg-white shadow-md border border-gray-200 hover:shadow-lg transition-shadow"
+              >
+                <figure class="px-4 pt-4">
+                  <img 
+                    :src="getProductImageUrl(product)" 
+                    :alt="product.name"
+                    class="rounded-xl w-full h-32 object-cover"
+                    @error="handleImageError"
+                  >
+                </figure>
+                <div class="card-body p-4">
+                  <h5 class="card-title text-sm font-semibold text-gray-900 line-clamp-2">
+                    {{ product.name }}
+                  </h5>
+                  <div class="flex justify-between items-center mt-2">
+                    <span class="text-lg font-bold text-primary">
+                      Rp {{ formatPrice(product.price) }}
+                    </span>
+                    <span class="text-xs text-gray-500">
+                      Stok: {{ product.stock || 0 }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="text-center py-12 bg-gray-50 rounded-xl">
+            <div class="text-6xl mb-4">📦</div>
+            <h4 class="text-xl font-semibold text-gray-700 mb-2">Belum Ada Produk</h4>
+            <p class="text-gray-500">Kategori ini belum memiliki produk apapun.</p>
+          </div>
+
           <!-- Action Buttons -->
-          <div class="flex justify-end space-x-3 pt-4 border-t">
-            <button @click="closeViewModal" class="btn btn-ghost">
-              Tutup
+          <div class="flex justify-end space-x-3 pt-6 border-t">
+            <button @click="closeViewModal" class="btn btn-lg">
+              ❌ Tutup
             </button>
-            <button @click="editFromView(viewingCategory)" class="btn btn-info">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-              </svg>
-              Edit Kategori
+            <button @click="editFromView(viewingCategory)" class="btn btn-primary btn-lg">
+              ✏️ Edit Kategori
             </button>
           </div>
         </div>
@@ -378,6 +376,8 @@ export default {
     const showViewModal = ref(false)
     const editingCategory = ref(null)
     const viewingCategory = ref(null)
+    const categoryProducts = ref([])
+    const loadingProducts = ref(false)
 
     const categoryForm = ref({
       name: '',
@@ -470,14 +470,50 @@ export default {
       }
     }
 
-    const viewCategory = (category) => {
+    const viewCategory = async (category) => {
       viewingCategory.value = category
       showViewModal.value = true
+      
+      // Load products for this category
+      await loadCategoryProducts(category.id)
+    }
+
+    const loadCategoryProducts = async (categoryId) => {
+      loadingProducts.value = true
+      categoryProducts.value = []
+      
+      try {
+        console.log('Loading products for category:', categoryId)
+        // Assuming there's a productService.getProductsByCategory method
+        // If not available, we'll use a generic API call
+        const response = await fetch(`https://backend-ravayahijab.up.railway.app/api/products?category_id=${categoryId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        })
+        
+        const result = await response.json()
+        console.log('Category products result:', result)
+        
+        if (result.success && result.data) {
+          categoryProducts.value = result.data.data || result.data || []
+        } else {
+          categoryProducts.value = []
+        }
+      } catch (error) {
+        console.error('Error loading category products:', error)
+        categoryProducts.value = []
+      } finally {
+        loadingProducts.value = false
+      }
     }
 
     const closeViewModal = () => {
       showViewModal.value = false
       viewingCategory.value = null
+      categoryProducts.value = []
     }
 
     const editFromView = (category) => {
@@ -494,6 +530,28 @@ export default {
         hour: '2-digit',
         minute: '2-digit'
       })
+    }
+
+    const getProductImageUrl = (product) => {
+      if (product && product.image) {
+        // Handle both full URLs and relative paths
+        if (product.image.startsWith('http')) {
+          return product.image
+        }
+        // Remove leading slash and /storage/ prefix if present
+        let imagePath = product.image.replace(/^\/+/, '').replace(/^storage\//, '')
+        return `https://backend-ravayahijab.up.railway.app/files/products/${imagePath}`
+      }
+      return '/images/placeholder-product.jpg'
+    }
+
+    const handleImageError = (event) => {
+      event.target.src = '/images/placeholder-product.jpg'
+    }
+
+    const formatPrice = (price) => {
+      if (!price) return '0'
+      return new Intl.NumberFormat('id-ID').format(price)
     }
 
     const closeModal = () => {
@@ -519,6 +577,8 @@ export default {
       showEditModal,
       showViewModal,
       viewingCategory,
+      categoryProducts,
+      loadingProducts,
       categoryForm,
       submitCategory,
       updateCategoryStatus,
@@ -529,8 +589,21 @@ export default {
       editFromView,
       formatDate,
       closeModal,
-      loadCategories
+      loadCategories,
+      getProductImageUrl,
+      handleImageError,
+      formatPrice
     }
   }
 }
 </script>
+
+<style scoped>
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>
